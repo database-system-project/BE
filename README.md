@@ -6,11 +6,26 @@ JDK 21, Spring Boot 3.5, Gradle Wrapper 8.14.3, PostgreSQL 18을 사용합니다
 
 ### 로컬 실행
 
-JDK 21과 Docker Compose를 준비한 후 이 저장소 루트에서 실행합니다.
+JDK 21과 Docker Compose를 준비합니다. 저장소 루트에 `.env`가 없다면 최초 한 번 아래 명령으로 생성합니다. 기존 `.env`와 DB 볼륨을 사용 중이라면 그대로 사용합니다.
 
 ```sh
-cp .env.example .env
-docker compose up -d --wait
+(
+    set -euC
+    umask 077
+    postgres_password="$(openssl rand -hex 24)"
+    cat > .env <<EOF
+POSTGRES_DB=hospital
+POSTGRES_USER=hospital
+POSTGRES_PASSWORD=$postgres_password
+POSTGRES_PORT=15432
+EOF
+)
+```
+
+Docker Desktop을 실행하고 엔진이 준비되면 PostgreSQL과 Spring Boot를 시작합니다.
+
+```sh
+docker compose up -d --wait &&
 ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
 
@@ -18,16 +33,16 @@ docker compose up -d --wait
 - Swagger UI는 로컬 프로필에서 `http://127.0.0.1:8080/swagger-ui.html`로 열 수 있습니다.
 - PostgreSQL 포트는 기본 `15432`이고 `.env`의 `POSTGRES_PORT`로 변경할 수 있습니다.
 - DB 연결에 사용하는 `.env` 값은 따옴표 없이 작성합니다. 볼륨을 처음 생성할 때 PostgreSQL 계정과 DB 이름이 초기화됩니다. `docker compose down`은 데이터를 보존합니다.
-- Windows에서는 `cp` 대신 PowerShell의 `Copy-Item`, `./gradlew` 대신 `.\gradlew.bat`을 사용합니다.
+- Windows에서는 같은 키로 `.env`를 직접 만들고 비밀번호를 지정합니다. Gradle은 `.\gradlew.bat`으로 실행합니다.
 - `local` 프로필 없이 실행할 때는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`를 환경 변수로 전달합니다.
 
 ### 빌드 및 테스트
 
-기본 `.env.example` 값으로 PostgreSQL을 실행한 후 테스트 전용 DB를 한 번 생성합니다.
+기본 DB 계정 `hospital`로 PostgreSQL을 실행한 후 테스트 전용 DB를 한 번 생성합니다. 테스트 실행 시 `.env`에 지정한 비밀번호를 전달합니다.
 
 ```sh
 docker compose exec -T postgres createdb -U hospital hospital_test
-./gradlew build
+TEST_DB_PASSWORD="$(sed -n 's/^POSTGRES_PASSWORD=//p' .env)" ./gradlew build
 ```
 
 DB 연결 설정을 바꾼 경우 `TEST_DB_URL`, `TEST_DB_USERNAME`, `TEST_DB_PASSWORD`를 테스트 DB에 맞게 지정합니다. 실행 JAR은 `build/libs/`에 생성됩니다.
