@@ -39,9 +39,8 @@ out/
 ### Mac OS ###
 .DS_Store
 
-## application ###
-/src/main/resources/application.yaml
-/src/main/resources/application.yml
-
-#env
+# Local configuration and secrets
 .env
+.env.*
+!.env.example
+/src/main/resources/application-local.properties

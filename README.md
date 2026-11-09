@@ -1,4 +1,44 @@
 # 🗣️ Database System BE
+
+## 백엔드 개발 환경
+
+JDK 21, Spring Boot 3.5, Gradle Wrapper 8.14.3, PostgreSQL 18을 사용합니다. JPA는 스키마를 검증하고, DDL 변경은 Flyway SQL로 관리합니다.
+
+### 로컬 실행
+
+JDK 21과 Docker Compose를 준비한 후 이 저장소 루트에서 실행합니다.
+
+```sh
+cp .env.example .env
+docker compose up -d --wait
+./gradlew bootRun --args='--spring.profiles.active=local'
+```
+
+- 헬스 체크는 `http://127.0.0.1:8080/actuator/health`입니다.
+- Swagger UI는 로컬 프로필에서 `http://127.0.0.1:8080/swagger-ui.html`로 열 수 있습니다.
+- PostgreSQL 포트는 기본 `15432`이고 `.env`의 `POSTGRES_PORT`로 변경할 수 있습니다.
+- DB 연결에 사용하는 `.env` 값은 따옴표 없이 작성합니다. 볼륨을 처음 생성할 때 PostgreSQL 계정과 DB 이름이 초기화됩니다. `docker compose down`은 데이터를 보존합니다.
+- Windows에서는 `cp` 대신 PowerShell의 `Copy-Item`, `./gradlew` 대신 `.\gradlew.bat`을 사용합니다.
+- `local` 프로필 없이 실행할 때는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`를 환경 변수로 전달합니다.
+
+### 빌드 및 테스트
+
+기본 `.env.example` 값으로 PostgreSQL을 실행한 후 테스트 전용 DB를 한 번 생성합니다.
+
+```sh
+docker compose exec -T postgres createdb -U hospital hospital_test
+./gradlew build
+```
+
+DB 연결 설정을 바꾼 경우 `TEST_DB_URL`, `TEST_DB_USERNAME`, `TEST_DB_PASSWORD`를 테스트 DB에 맞게 지정합니다. 실행 JAR은 `build/libs/`에 생성됩니다.
+
+`main`과 `develop`으로 향하는 PR 및 두 브랜치의 push에서 GitHub Actions가 PostgreSQL 서비스와 함께 빌드와 통합 테스트를 실행합니다. 실행 결과에서 테스트 리포트와 빌드에 성공한 JAR을 내려받을 수 있습니다.
+
+### 기능 개발 시작점
+
+- PostgreSQL DDL은 `src/main/resources/db/migration/`의 `V1__create_initial_schema.sql`부터 추가합니다.
+- 헬스 체크와 로컬 Swagger 경로를 공개하고 나머지 요청은 기본 차단합니다. 병원 업무 API와 JWT 인증은 후속 작업에서 추가합니다.
+
 ## 🚀 Git Flow
 - `main`
     - 프로젝트 최종 merge
@@ -10,9 +50,9 @@
     - 개발 브랜치
     - 예: `feat/#5`, `fix/#11`
 
-> 작업 단위로 이슈 생성 → 브랜치 생성 → 생성한 브랜치에서 작업 후 끝나면 dev 브랜치로 PR 남기기
+> 작업 단위로 이슈 생성 → 브랜치 생성 → 생성한 브랜치에서 작업 후 끝나면 develop 브랜치로 PR 남기기
 >
-> 모든 작업 시작 전 생성한 브랜치에서 dev 브랜치 pull을 받은 후 작업
+> 모든 작업 시작 전 생성한 브랜치에서 develop 브랜치 pull을 받은 후 작업
 
 &nbsp;
 ## 💡 PR Rules
