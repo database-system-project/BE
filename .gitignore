@@ -42,5 +42,4 @@ out/
 # Local configuration and secrets
 .env
 .env.*
-!.env.example
 /src/main/resources/application-local.properties
