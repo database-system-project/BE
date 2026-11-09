@@ -1,0 +1,71 @@
+name: BE CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: be-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: hospital_test
+          POSTGRES_USER: hospital
+          POSTGRES_PASSWORD: hospital-local
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U hospital -d hospital_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Run checks and build executable JAR
+        env:
+          TEST_DB_URL: jdbc:postgresql://127.0.0.1:${{ job.services.postgres.ports['5432'] }}/hospital_test
+        run: ./gradlew --no-daemon build
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: be-test-results
+          path: |
+            build/reports/tests/test/
+            build/test-results/test/
+          retention-days: 7
+
+      - name: Upload executable JAR
+        uses: actions/upload-artifact@v7
+        with:
+          name: hospital-be
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 7
