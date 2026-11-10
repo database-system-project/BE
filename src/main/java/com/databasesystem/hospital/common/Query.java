@@ -1,7 +1,6 @@
 package com.databasesystem.hospital.common;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -10,8 +9,7 @@ public final class Query {
 
     public static LocalDate date(Map<String, String> parameters, String key) {
         if (!parameters.containsKey(key)) { return null; }
-        try { return LocalDate.parse(parameters.get(key)); }
-        catch (DateTimeParseException exception) { throw ApiException.badRequest(); }
+        return Dates.parse(parameters.get(key));
     }
 
     public static Long id(Map<String, String> parameters, String key) {

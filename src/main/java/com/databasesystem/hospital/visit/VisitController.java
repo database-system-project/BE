@@ -5,7 +5,6 @@ import com.databasesystem.hospital.common.QueryParameters;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -73,6 +72,6 @@ public class VisitController {
     public Map<String, Object> complete(@AuthenticationPrincipal HospitalPrincipal user,
                                         @PathVariable @Positive long visitId) { return service.complete(user, visitId); }
 
-    public record Cancellation(@NotBlank @Size(max = 200) String reason) { }
+    public record Cancellation(@NotBlank String reason) { }
     public record MedicalRecord(@NotBlank String symptoms, @NotBlank String diagnosis, @NotBlank String treatmentNote) { }
 }

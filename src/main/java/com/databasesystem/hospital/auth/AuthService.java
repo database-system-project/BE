@@ -51,7 +51,7 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public Map<String, Object> login(AuthController.Login request) {
-        Map<String, Object> row = accounts.byLogin(request.loginId().strip()).orElseThrow(this::failed);
+        Map<String, Object> row = accounts.byLogin(Values.clean(request.loginId(), 50)).orElseThrow(this::failed);
         if (!accounts.isActive(row) || !passwords.matches(request.password(), (String) row.get("password_hash"))) {
             throw failed();
         }

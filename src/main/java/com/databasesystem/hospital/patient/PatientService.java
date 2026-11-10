@@ -4,6 +4,7 @@ import com.databasesystem.hospital.auth.HospitalPrincipal;
 import com.databasesystem.hospital.auth.Role;
 import com.databasesystem.hospital.common.ApiException;
 import com.databasesystem.hospital.common.Database;
+import com.databasesystem.hospital.common.Dates;
 import com.databasesystem.hospital.common.Query;
 import com.databasesystem.hospital.common.Values;
 import com.databasesystem.hospital.common.Views;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -123,8 +123,7 @@ public class PatientService {
         var old = patient(patientId);
         LocalDate birth = Values.date(old, "birth_date");
         if (request.containsKey("birthDate")) {
-            try { birth = LocalDate.parse(string(request, "birthDate")); }
-            catch (DateTimeParseException exception) { throw ApiException.badRequest(); }
+            birth = Dates.parse(string(request, "birthDate"));
         }
         String gender = request.containsKey("gender") ? string(request, "gender") : Values.text(old, "gender");
         if (birth.isAfter(LocalDate.now(clock.withZone(Values.SEOUL))) || !Set.of("M", "F").contains(gender)) {
