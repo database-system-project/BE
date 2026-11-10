@@ -28,18 +28,17 @@
 
 ## 프런트 연동 설정
 
-`local` 프로필의 기본 허용 origin은 다음과 같다. 프런트 프레임워크가 정해졌다는 뜻은 아니며 로컬 연동용 기본값이다.
+프런트의 실제 Vite 기본 포트 8443에 맞춰 로컬 `.env`에 다음 origin을 설정한다. 자세한 초기화·실행 방법은 [로컬 환경 설정](LOCAL_SETUP.md)을 따른다.
 
-- `http://localhost:5173`, `http://127.0.0.1:5173`
-- `http://localhost:3000`, `http://127.0.0.1:3000`
+- `http://localhost:8443`, `http://127.0.0.1:8443`
 
-다른 주소는 `.env` 또는 실행 환경의 `CORS_ALLOWED_ORIGINS`에 쉼표로 구분해 지정한다. 값은 전체 기본 목록을 대체한다.
+다른 주소는 `.env` 또는 실행 환경의 `CORS_ALLOWED_ORIGINS`에 쉼표로 구분해 지정한다. 값은 전체 허용 목록이다.
 
 ```properties
-CORS_ALLOWED_ORIGINS=https://frontend.example.com,http://localhost:5173
+CORS_ALLOWED_ORIGINS=http://localhost:8443,http://127.0.0.1:8443
 ```
 
-`local` 외 프로필의 기본값은 빈 목록이다. 다른 origin을 허용하려면 값을 지정한다. 쿠키 인증 대신 기존 `Authorization: Bearer <token>`을 사용한다.
+설정값이 없으면 다른 origin을 허용하지 않는다. 쿠키 인증 대신 기존 `Authorization: Bearer <token>`을 사용한다.
 
 CORS는 사전 요청을 처리할 뿐 API 권한을 부여하지 않는다. 허용 origin의 실제 요청도 JWT 없이는 401이고, 다른 역할·다른 환자의 기록은 기존 검증을 따른다.
 
