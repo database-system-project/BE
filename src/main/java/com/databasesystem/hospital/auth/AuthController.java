@@ -29,12 +29,12 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, Object> login(@Valid @RequestBody Login request) { return service.login(request); }
 
-    public record Signup(@NotBlank @Size(max = 50) String loginId,
+    public record Signup(@NotBlank String loginId,
                          @NotBlank @Size(min = 8, max = 72) String password,
-                         @NotBlank @Size(max = 50) String name,
+                         @NotBlank String name,
                          @NotNull LocalDate birthDate, @NotBlank String gender,
                          @NotBlank String phone, @NotNull @AssertTrue Boolean privacyAgreed) { }
 
-    public record Login(@NotBlank @Size(max = 50) String loginId,
+    public record Login(@NotBlank String loginId,
                         @NotBlank @Size(max = 72) String password) { }
 }
