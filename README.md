@@ -2,7 +2,7 @@
 
 ## 백엔드 개발 환경
 
-JDK 21, Spring Boot 3.5, Gradle Wrapper 8.14.3, PostgreSQL 18을 사용합니다. JPA는 스키마를 검증하고, DDL 변경은 Flyway SQL로 관리합니다.
+JDK 21, Spring Boot 3.5, Gradle Wrapper 9.8.2, PostgreSQL 18을 사용합니다. JPA는 매핑한 엔티티의 스키마를 검증하고, DDL 변경은 Flyway SQL로 관리합니다. PostgreSQL 잠금·조회는 공통 JDBC 저장소를 통해 실행합니다.
 
 ### 로컬 실행
 
@@ -13,11 +13,13 @@ JDK 21과 Docker Compose를 준비합니다. 저장소 루트에 `.env`가 없�
     set -euC
     umask 077
     postgres_password="$(openssl rand -hex 24)"
+    jwt_secret="$(openssl rand -hex 32)"
     cat > .env <<EOF
 POSTGRES_DB=hospital
 POSTGRES_USER=hospital
 POSTGRES_PASSWORD=$postgres_password
 POSTGRES_PORT=15432
+JWT_SECRET=$jwt_secret
 EOF
 )
 ```
@@ -35,6 +37,7 @@ docker compose up -d --wait &&
 - DB 연결에 사용하는 `.env` 값은 따옴표 없이 작성합니다. 볼륨을 처음 생성할 때 PostgreSQL 계정과 DB 이름이 초기화됩니다. `docker compose down`은 데이터를 보존합니다.
 - Windows에서는 같은 키로 `.env`를 직접 만들고 비밀번호를 지정합니다. Gradle은 `.\gradlew.bat`으로 실행합니다.
 - `local` 프로필 없이 실행할 때는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`를 환경 변수로 전달합니다.
+- API 실행에는 32바이트 이상의 `JWT_SECRET`이 필요합니다. 기존 `.env`를 사용한다면 새 키만 별도로 추가하고 파일은 커밋하지 않습니다. `JWT_TTL_SECONDS` 기본값은 1800초입니다.
 
 ### 빌드 및 테스트
 
@@ -51,8 +54,10 @@ DB 연결 설정을 바꾼 경우 `TEST_DB_URL`, `TEST_DB_USERNAME`, `TEST_DB_PA
 
 ### 기능 개발 시작점
 
-- PostgreSQL DDL은 `src/main/resources/db/migration/`의 `V1__create_initial_schema.sql`부터 추가합니다.
-- 헬스 체크와 로컬 Swagger 경로를 공개하고 나머지 요청은 기본 차단합니다. 병원 업무 API와 JWT 인증은 후속 작업에서 추가합니다.
+- `V1__create_initial_schema.sql`은 업무 테이블·부분 유일 인덱스·감사 기록을 정의합니다. 이미 적용한 마이그레이션을 수정하지 말고 다음 버전의 SQL을 추가합니다.
+- 회원가입·로그인과 헬스 체크, 로컬 Swagger 조회만 공개합니다. 나머지 API는 서명·만료·계정 활성·토큰 버전을 검증합니다.
+- 비밀번호는 PBKDF2로 저장합니다. 계정 비활성화와 토큰 버전 변경은 다음 요청부터 적용합니다.
+- 공통 DB·인증 기반과 기능별 개발 순서는 [담당 API 개발 계획](docs/API_OWNERSHIP.md)에 정리합니다.
 
 ## 🚀 Git Flow
 - `main`

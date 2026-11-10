@@ -42,6 +42,6 @@ class HospitalApplicationTest {
                 .andExpect(jsonPath("$.status").value("UP"));
 
         mvc.perform(get("/api/v1/appointments"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
