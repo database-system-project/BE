@@ -73,6 +73,17 @@ class AuthIntegrationTest extends IntegrationSupport {
     }
 
     @Test
+    void jsonScalarTypesAreValidatedWithoutAutomaticConversion() throws Exception {
+        var booleanString = signup("string-consent"); booleanString.put("privacyAgreed", "true");
+        var numericLogin = signup("numeric-login"); numericLogin.put("loginId", 12345678);
+        for (var invalid : List.of(booleanString, numericLogin)) {
+            mvc.perform(post("/api/v1/auth/signup").contentType("application/json").content(mapper.writeValueAsString(invalid)))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM user_account", Long.class)).isZero();
+    }
+
+    @Test
     void inactiveAccountCannotLoginOrUseAnExistingToken() throws Exception {
         Actor patient = patient();
         jdbc.update("UPDATE user_account SET account_status = 'INACTIVE' WHERE account_id = ?", patient.accountId());
