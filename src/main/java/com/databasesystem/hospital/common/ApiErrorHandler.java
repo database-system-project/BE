@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -40,9 +43,19 @@ public class ApiErrorHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class,
             HandlerMethodValidationException.class, HttpMessageNotReadableException.class,
-            MethodArgumentTypeMismatchException.class})
+            MethodArgumentTypeMismatchException.class, ServletRequestBindingException.class})
     ResponseEntity<ApiError> invalid(Exception exception) {
         return business(ApiException.badRequest());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    ResponseEntity<ApiError> method(HttpRequestMethodNotSupportedException exception) {
+        return business(new ApiException(405, "METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    ResponseEntity<ApiError> mediaType(HttpMediaTypeNotSupportedException exception) {
+        return business(new ApiException(415, "UNSUPPORTED_MEDIA_TYPE", "요청의 Content-Type을 확인하세요."));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
