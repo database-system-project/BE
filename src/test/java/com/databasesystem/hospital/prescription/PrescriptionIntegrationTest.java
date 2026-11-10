@@ -77,6 +77,8 @@ class PrescriptionIntegrationTest extends IntegrationSupport {
         long medicine = medication("검색약");
         getAs("/api/v1/doctor/medications?keyword=검색", owner.actor()).andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].efficacy").isEmpty());
+        getAs("/api/v1/doctor/medications", owner.actor()).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
         getAs("/api/v1/doctor/medications?keyword=검색", staff(Role.CASHIER)).andExpect(status().isForbidden());
         String path = "/api/v1/doctor/visits/" + visit;
         postAs(path + "/prescriptions", other.actor(), Map.of("items", List.of(item(medicine)))).andExpect(status().isNotFound());
@@ -84,6 +86,10 @@ class PrescriptionIntegrationTest extends IntegrationSupport {
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_MEDICATIONS"));
         var invalid = new java.util.HashMap<>(item(medicine)); invalid.put("dosePerIntake", 1.001);
         postAs(path + "/prescriptions", owner.actor(), Map.of("items", List.of(invalid))).andExpect(status().isBadRequest());
+        for (var field : Map.of("timesPerDay", 1.5, "timing", 0, "medicationId", medicine + 0.5).entrySet()) {
+            var wrongType = new java.util.HashMap<>(item(medicine)); wrongType.put(field.getKey(), field.getValue());
+            postAs(path + "/prescriptions", owner.actor(), Map.of("items", List.of(wrongType))).andExpect(status().isBadRequest());
+        }
         var nullOverrides = new java.util.HashMap<String, Object>(); nullOverrides.put("items", List.of(item(medicine))); nullOverrides.put("overrides", null);
         postAs(path + "/prescriptions", owner.actor(), nullOverrides).andExpect(status().isBadRequest());
         jdbc.update("UPDATE medicine SET medicine_active = false");

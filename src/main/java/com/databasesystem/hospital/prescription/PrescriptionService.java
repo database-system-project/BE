@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
@@ -52,7 +53,8 @@ public class PrescriptionService {
         clinical.inProgress(visit);
         List<Long> ids = request.getItems().stream().map(PrescriptionController.Item::medicationId).toList();
         validate(ids);
-        LocalDate today = LocalDate.now(clock.withZone(SEOUL));
+        Instant now = clock.instant();
+        LocalDate today = now.atZone(SEOUL).toLocalDate();
         TreeSet<Long> locked = new TreeSet<>(ids);
         locked.addAll(currentMedications(id(visit, "patient_id"), today));
         db.rows("SELECT medicine_id FROM medicine WHERE medicine_id IN (:ids) ORDER BY medicine_id FOR SHARE", Map.of("ids", locked));
@@ -72,7 +74,7 @@ public class PrescriptionService {
         long prescription = db.insert("""
                 INSERT INTO prescription(visit_id, prescribed_at, prescription_status)
                 VALUES (:visit, :now, 'ACTIVE') RETURNING prescription_id
-                """, map("visit", visitId, "now", clock.instant()));
+                """, map("visit", visitId, "now", now));
         for (var item : request.getItems()) {
             db.update("""
                     INSERT INTO prescription_item(prescription_id, medicine_id, dose_amount, dose_unit,
@@ -90,7 +92,7 @@ public class PrescriptionService {
                     VALUES (:rx, :seq, :medicine, :type, :related, :content, :reason, :now)
                     """, map("rx", prescription, "seq", ++seq, "medicine", warning.medicine(), "type", warning.type(),
                     "related", warning.related(), "content", warning.content(),
-                    "reason", reasons.get(warning.response().get("warningId")).strip(), "now", clock.instant()));
+                    "reason", reasons.get(warning.response().get("warningId")).strip(), "now", now));
         }
         return Map.of("prescriptionId", prescription, "status", "ACTIVE", "warningCount", warnings.size());
     }
