@@ -42,3 +42,37 @@ tasks.named('test') {
 tasks.named('jar') {
     enabled = false
 }
+
+['processResources', 'processTestResources'].each { taskName ->
+    tasks.named(taskName) {
+        exclude '**/application*.yml', '**/application*.yaml'
+    }
+}
+
+tasks.register('initLocalEnv') {
+    group = 'application'
+    description = 'Creates an ignored local .env with random PostgreSQL and JWT secrets.'
+    doLast {
+        def target = file('.env').toPath()
+        if (java.nio.file.Files.exists(target)) {
+            throw new GradleException('.env already exists; existing values were preserved.')
+        }
+        def random = new java.security.SecureRandom()
+        def randomHex = { int length ->
+            byte[] bytes = new byte[length]
+            random.nextBytes(bytes)
+            bytes.encodeHex().toString()
+        }
+        def content = file('.env.example').getText('UTF-8')
+                .replace('CHANGE_ME_POSTGRES_PASSWORD', randomHex(24))
+                .replace('CHANGE_ME_JWT_SECRET', randomHex(32))
+        def attributes = []
+        if (target.fileSystem.supportedFileAttributeViews().contains('posix')) {
+            attributes.add(java.nio.file.attribute.PosixFilePermissions.asFileAttribute(
+                    java.nio.file.attribute.PosixFilePermissions.fromString('rw-------')))
+        }
+        java.nio.file.Files.createFile(target, attributes as java.nio.file.attribute.FileAttribute[])
+        java.nio.file.Files.writeString(target, content, java.nio.charset.StandardCharsets.UTF_8)
+        logger.lifecycle('Created .env with local-only values. Secret values are not printed.')
+    }
+}

@@ -1,5 +1,7 @@
 # 🗣️ Database System BE
 
+로컬 `.env` 생성과 DB·백엔드 실행 방법은 [로컬 환경 설정](docs/LOCAL_SETUP.md)을 참고합니다. 실제 비밀번호·JWT 키는 Git에 올리지 않습니다.
+
 ## 🚀 Git Flow
 - `main`
     - 프로젝트 최종 merge

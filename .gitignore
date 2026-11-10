@@ -42,4 +42,9 @@ out/
 # Local configuration and secrets
 .env
 .env.*
+!.env.example
 /src/main/resources/application-local.properties
+/src/main/resources/application-local.yml
+/src/main/resources/application.yml
+**/application*.yml
+**/application*.yaml
