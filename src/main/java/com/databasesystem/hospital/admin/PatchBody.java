@@ -39,4 +39,24 @@ final class PatchBody {
         if (!node.isIntegralNumber() || !node.canConvertToLong() || node.asLong() <= 0) { throw ApiException.badRequest(); }
         return node.asLong();
     }
+
+    /** null을 허용하는 문자열 필드. 생략과 null을 구분하려면 {@link #has(String)}를 함께 쓴다. */
+    String nullableText(String key) {
+        if (!body.has(key) || body.get(key).isNull()) { return null; }
+        if (!body.get(key).isTextual()) { throw ApiException.badRequest(); }
+        return body.get(key).asText();
+    }
+
+    boolean has(String key) {
+        return body.has(key);
+    }
+
+    /** 범위가 있는 정수 필드. 생략하면 null, null·문자열·소수·범위 밖은 400이다. */
+    Integer integer(String key, int minimum, int maximum) {
+        if (!body.has(key)) { return null; }
+        JsonNode node = body.get(key);
+        if (!node.isIntegralNumber() || !node.canConvertToInt()
+                || node.asInt() < minimum || node.asInt() > maximum) { throw ApiException.badRequest(); }
+        return node.asInt();
+    }
 }
