@@ -74,32 +74,15 @@ class StaffAccountUpdateIntegrationTest extends IntegrationSupport {
     }
 
     @Test
-    void doctorNameIsSyncedAndDoctorProfileBlocksRoleChange() throws Exception {
+    void staffEndpointRejectsDoctorUpdatesAndRoleConversions() throws Exception {
         Actor admin = staff(Role.ADMIN);
         Doctor doctor = doctor();
-        long account = doctor.actor().accountId();
-
-        patchAs(admin, account, "{\"name\":\"새이름\"}").andExpect(status().isOk());
-        assertThat(row(account)).containsEntry("staff_name", "새이름");
-        assertThat(jdbc.queryForObject("SELECT doctor_name FROM doctor WHERE account_id = ?", String.class, account))
-                .isEqualTo("새이름");
-
-        patchAs(admin, account, "{\"role\":\"CASHIER\"}")
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("ACCOUNT_ROLE_CONFLICT"))
-                .andExpect(jsonPath("$.message").value("연결된 의사 프로필 때문에 역할을 변경할 수 없습니다."));
-        assertThat(row(account)).containsEntry("role", "DOCTOR");
-
-        patchAs(admin, account, "{\"role\":\"DOCTOR\",\"active\":false}").andExpect(status().isOk());
-        assertThat(row(account)).containsEntry("account_status", "INACTIVE");
-    }
-
-    @Test
-    void roleChangeToDoctorWithoutProfileIsAllowed() throws Exception {
-        Actor admin = staff(Role.ADMIN);
         Actor target = staff(Role.CASHIER);
-        patchAs(admin, target.accountId(), "{\"role\":\"DOCTOR\"}")
-                .andExpect(status().isOk()).andExpect(jsonPath("$.role").value("DOCTOR"));
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM doctor", Long.class)).isZero();
+
+        patchAs(admin, doctor.actor().accountId(), "{\"name\":\"새이름\"}").andExpect(status().isNotFound());
+        patchAs(admin, target.accountId(), "{\"role\":\"DOCTOR\"}").andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        assertThat(row(target.accountId())).containsEntry("role", "CASHIER");
     }
 
     @Test
@@ -185,7 +168,7 @@ class StaffAccountUpdateIntegrationTest extends IntegrationSupport {
     @Test
     void onlyAdminsCanUpdate() throws Exception {
         Actor target = staff(Role.CASHIER);
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient())) {
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), doctor().actor(), patient())) {
             patchAs(other, target.accountId(), "{\"active\":false}")
                     .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
         }

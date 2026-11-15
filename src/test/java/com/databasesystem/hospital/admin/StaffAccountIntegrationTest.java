@@ -27,11 +27,11 @@ class StaffAccountIntegrationTest extends IntegrationSupport {
     void adminCreatesAnAccountAndStaffProfileInOneStep() throws Exception {
         Actor admin = staff(Role.ADMIN);
         long before = accountCount();
-        postAs(PATH, admin, body("doctor_demo", "DOCTOR", true))
+        postAs(PATH, admin, body("staff_demo", "CASHIER", true))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.loginId").value("doctor_demo"))
+                .andExpect(jsonPath("$.loginId").value("staff_demo"))
                 .andExpect(jsonPath("$.name").value("이정훈"))
-                .andExpect(jsonPath("$.role").value("DOCTOR"))
+                .andExpect(jsonPath("$.role").value("CASHIER"))
                 .andExpect(jsonPath("$.active").value(true))
                 .andExpect(jsonPath("$.accountId").isNumber())
                 .andExpect(jsonPath("$.password").doesNotExist())
@@ -40,9 +40,9 @@ class StaffAccountIntegrationTest extends IntegrationSupport {
         assertThat(accountCount()).isEqualTo(before + 1);
         Map<String, Object> row = jdbc.queryForMap("""
                 SELECT a.role, a.account_status, a.password_hash, s.staff_name, s.staff_active
-                  FROM user_account a JOIN staff s ON s.account_id = a.account_id WHERE a.login_id = 'doctor_demo'
+                  FROM user_account a JOIN staff s ON s.account_id = a.account_id WHERE a.login_id = 'staff_demo'
                 """);
-        assertThat(row).containsEntry("role", "DOCTOR").containsEntry("account_status", "ACTIVE")
+        assertThat(row).containsEntry("role", "CASHIER").containsEntry("account_status", "ACTIVE")
                 .containsEntry("staff_name", "이정훈").containsEntry("staff_active", true);
         String hash = (String) row.get("password_hash");
         assertThat(hash).doesNotContain("DemoPass!123");
@@ -76,7 +76,7 @@ class StaffAccountIntegrationTest extends IntegrationSupport {
         postAs(PATH, admin, body("same_login", "CASHIER", false)).andExpect(status().isCreated());
         long afterFirst = accountCount();
         for (String login : List.of("same_login", patient.loginId())) {
-            postAs(PATH, admin, body(login, "DOCTOR", true))
+            postAs(PATH, admin, body(login, "CASHIER", true))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.code").value("LOGIN_ID_TAKEN"))
                     .andExpect(jsonPath("$.message").value("이미 사용 중인 로그인 아이디입니다."));
@@ -86,7 +86,7 @@ class StaffAccountIntegrationTest extends IntegrationSupport {
 
     @Test
     void onlyAdminsCanCreateStaffAccounts() throws Exception {
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient())) {
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), doctor().actor(), patient())) {
             postAs(PATH, other, body("blocked_" + other.accountId(), "CASHIER", true))
                     .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
         }
@@ -102,14 +102,15 @@ class StaffAccountIntegrationTest extends IntegrationSupport {
         Actor admin = staff(Role.ADMIN);
         long before = accountCount();
         var patientRole = body("p1", "PATIENT", true);
+        var doctorRole = body("doctor_invalid", "DOCTOR", true);
         var unknownRole = body("p2", "NURSE", true);
-        var blankName = body("p3", "DOCTOR", true); blankName.put("name", "   ");
-        var longLogin = body("x".repeat(51), "DOCTOR", true);
-        var shortPassword = body("p4", "DOCTOR", true); shortPassword.put("initialPassword", "short");
-        var missingActive = body("p5", "DOCTOR", true); missingActive.remove("active");
-        var stringActive = body("p6", "DOCTOR", true); stringActive.put("active", "true");
-        var extraField = body("p7", "DOCTOR", true); extraField.put("staffId", 1);
-        for (var invalid : List.of(patientRole, unknownRole, blankName, longLogin, shortPassword,
+        var blankName = body("p3", "CASHIER", true); blankName.put("name", "   ");
+        var longLogin = body("x".repeat(51), "CASHIER", true);
+        var shortPassword = body("p4", "CASHIER", true); shortPassword.put("initialPassword", "short");
+        var missingActive = body("p5", "CASHIER", true); missingActive.remove("active");
+        var stringActive = body("p6", "CASHIER", true); stringActive.put("active", "true");
+        var extraField = body("p7", "CASHIER", true); extraField.put("staffId", 1);
+        for (var invalid : List.of(patientRole, doctorRole, unknownRole, blankName, longLogin, shortPassword,
                 missingActive, stringActive, extraField)) {
             postAs(PATH, admin, invalid).andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));

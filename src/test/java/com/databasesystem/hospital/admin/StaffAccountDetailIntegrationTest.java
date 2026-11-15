@@ -14,33 +14,29 @@ class StaffAccountDetailIntegrationTest extends IntegrationSupport {
     private static final String PATH = "/api/v1/admin/staff-accounts/";
 
     @Test
-    void doctorAccountShowsStaffAndDoctorIds() throws Exception {
+    void doctorAccountsAreNotStaffAccounts() throws Exception {
         Actor admin = staff(Role.ADMIN);
-        Doctor doctor = doctor();
-        getAs(PATH + doctor.actor().accountId(), admin)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountId").value(doctor.actor().accountId()))
-                .andExpect(jsonPath("$.loginId").value(doctor.actor().loginId()))
-                .andExpect(jsonPath("$.name").value("테스트직원"))
-                .andExpect(jsonPath("$.role").value("DOCTOR"))
-                .andExpect(jsonPath("$.active").value(true))
-                .andExpect(jsonPath("$.staffId").value(doctor.actor().staffId()))
-                .andExpect(jsonPath("$.doctorId").value(doctor.doctorId()))
-                .andExpect(jsonPath("$.password").doesNotExist())
-                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+        long unlinkedDoctor = account("unlinked_doctor", Role.DOCTOR);
+        for (long accountId : List.of(doctor().actor().accountId(), unlinkedDoctor)) {
+            getAs(PATH + accountId, admin).andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        }
     }
 
     @Test
-    void doctorWithoutProfileAndOtherRolesHaveNullDoctorId() throws Exception {
+    void staffDetailReturnsStaffIdAndOmitsDoctorId() throws Exception {
         Actor admin = staff(Role.ADMIN);
-        Actor unlinkedDoctor = staff(Role.DOCTOR);
         Actor cashier = staff(Role.CASHIER);
-        for (Actor target : List.of(unlinkedDoctor, cashier, admin)) {
-            getAs(PATH + target.accountId(), admin)
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.staffId").value(target.staffId()))
-                    .andExpect(jsonPath("$.doctorId").value(org.hamcrest.Matchers.nullValue()));
-        }
+        getAs(PATH + cashier.accountId(), admin).andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountId").value(cashier.accountId()))
+                .andExpect(jsonPath("$.loginId").value(cashier.loginId()))
+                .andExpect(jsonPath("$.name").value("테스트직원"))
+                .andExpect(jsonPath("$.role").value("CASHIER"))
+                .andExpect(jsonPath("$.active").value(true))
+                .andExpect(jsonPath("$.staffId").value(cashier.staffId()))
+                .andExpect(jsonPath("$.doctorId").doesNotHaveJsonPath())
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
 
     @Test
@@ -77,7 +73,7 @@ class StaffAccountDetailIntegrationTest extends IntegrationSupport {
     @Test
     void onlyAdminsCanViewDetail() throws Exception {
         Actor target = staff(Role.CASHIER);
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient())) {
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), doctor().actor(), patient())) {
             getAs(PATH + target.accountId(), other).andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.code").value("FORBIDDEN"));
         }

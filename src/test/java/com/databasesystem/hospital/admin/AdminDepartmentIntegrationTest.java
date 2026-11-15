@@ -157,8 +157,9 @@ class AdminDepartmentIntegrationTest extends IntegrationSupport {
     @Test
     void onlyAdminsCanManageDepartments() throws Exception {
         Actor admin = staff(Role.ADMIN);
-        long id = createdId(admin, "내과", true);
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient())) {
+        Doctor doctor = doctor();
+        long id = doctor.departmentId();
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), doctor.actor(), patient())) {
             create(other, "외과", true).andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
             getAs(PATH, other).andExpect(status().isForbidden());
             getAs(PATH + "/" + id, other).andExpect(status().isForbidden());

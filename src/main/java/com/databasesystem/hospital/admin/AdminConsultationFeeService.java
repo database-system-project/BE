@@ -63,9 +63,9 @@ public class AdminConsultationFeeService {
             throw ApiException.conflict("DUPLICATE_FEE_EFFECTIVE_FROM", "해당 진찰료 유형·적용 시작일의 요금이 이미 있습니다.");
         }
         long feeId = db.insert("""
-                INSERT INTO consultation_fee(fee_type, fee_amount, effective_from, set_by_staff_id)
-                VALUES (:type, :amount, :at, :staff) RETURNING fee_id
-                """, Values.map("type", type, "amount", request.amount(), "at", effectiveFrom, "staff", user.staff()));
+                INSERT INTO consultation_fee(fee_type, fee_amount, effective_from, set_by_account_id)
+                VALUES (:type, :amount, :at, :account) RETURNING fee_id
+                """, Values.map("type", type, "amount", request.amount(), "at", effectiveFrom, "account", user.accountId()));
         return view(db.one("SELECT fee_id, fee_type, fee_amount, effective_from FROM consultation_fee WHERE fee_id = :id",
                 Map.of("id", feeId)));
     }

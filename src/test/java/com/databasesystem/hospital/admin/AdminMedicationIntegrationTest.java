@@ -231,7 +231,7 @@ class AdminMedicationIntegrationTest extends IntegrationSupport {
     void onlyAdminsWithAValidTokenCanUseTheMedicationApis() throws Exception {
         Actor admin = staff(Role.ADMIN);
         long id = createdId(admin, "AUTH1");
-        for (Actor actor : new Actor[] {null, staff(Role.DOCTOR), staff(Role.RECEPTION), patient()}) {
+        for (Actor actor : new Actor[] {null, doctor().actor(), staff(Role.RECEPTION), patient()}) {
             int expected = actor == null ? 401 : 403;
             create(actor, body("AUTH2")).andExpect(status().is(expected));
             call(actor, get(PATH)).andExpect(status().is(expected));

@@ -122,16 +122,16 @@ public class ReservationService {
 
     private void validateSlot(ReservationController.Slot request) {
         var schedule = db.one("""
-                SELECT ds.*, d.doctor_active, dep.department_active, a.account_status, s.staff_active
+                SELECT ds.*, d.doctor_active, dep.department_active, a.account_status, a.role
                   FROM doctor_schedule ds JOIN doctor d ON d.doctor_id = ds.doctor_id
                   JOIN department dep ON dep.department_id = d.department_id
-                  JOIN user_account a ON a.account_id = d.account_id JOIN staff s ON s.account_id = a.account_id
+                  JOIN user_account a ON a.account_id = d.account_id
                  WHERE ds.schedule_id = :id
                 """, Map.of("id", request.scheduleId()));
         var local = request.startsAt().atZoneSameInstant(Values.SEOUL);
         LocalTime time = local.toLocalTime();
         boolean enabled = Boolean.FALSE.equals(schedule.get("is_closed")) && Boolean.TRUE.equals(schedule.get("doctor_active"))
-                && Boolean.TRUE.equals(schedule.get("department_active")) && Boolean.TRUE.equals(schedule.get("staff_active"))
+                && Boolean.TRUE.equals(schedule.get("department_active")) && "DOCTOR".equals(schedule.get("role"))
                 && "ACTIVE".equals(schedule.get("account_status"));
         boolean validTime = !time.isBefore(LocalTime.of(9, 0)) && !time.isAfter(LocalTime.of(16, 0))
                 && (time.isBefore(LocalTime.of(12, 30)) || !time.isBefore(LocalTime.of(13, 30)))

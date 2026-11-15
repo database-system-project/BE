@@ -1,11 +1,13 @@
 package com.databasesystem.hospital.admin;
 
+import com.databasesystem.hospital.auth.AccountRepository;
 import com.databasesystem.hospital.auth.HospitalPrincipal;
 import com.databasesystem.hospital.auth.Role;
 import com.databasesystem.hospital.common.ApiException;
 import com.databasesystem.hospital.common.Database;
 import com.databasesystem.hospital.common.Values;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,39 +19,61 @@ import java.util.Set;
 @Service
 public class AdminDoctorService {
     private static final String SELECT = """
-            SELECT d.doctor_id, d.account_id, d.department_id, p.department_name, d.doctor_name, d.doctor_active
+            SELECT d.doctor_id, d.account_id, d.department_id, p.department_name, d.doctor_name, d.doctor_active,
+                   a.login_id, (a.account_status = 'ACTIVE') AS account_active
               FROM doctor d JOIN department p ON p.department_id = d.department_id
+              JOIN user_account a ON a.account_id = d.account_id
             """;
     private final Database db;
+    private final AccountRepository accounts;
+    private final PasswordEncoder passwords;
 
-    public AdminDoctorService(Database db) { this.db = db; }
+    public AdminDoctorService(Database db, AccountRepository accounts, PasswordEncoder passwords) {
+        this.db = db;
+        this.accounts = accounts;
+        this.passwords = passwords;
+    }
 
-    /** DOCTOR 역할 직원 계정에 의사 프로필을 연결한다. 표시명은 staff.staff_name과 동기화한다. */
     @Transactional
     public Map<String, Object> create(HospitalPrincipal user, AdminDoctorController.CreateRequest request) {
         user.require(Role.ADMIN);
-        long accountId = positive(request.accountId());
         long departmentId = positive(request.departmentId());
         String name = Values.clean(request.name(), 50);
-
-        // 같은 계정을 동시에 두 번 연결하지 못하도록 계정 행을 잠근다.
-        Map<String, Object> account = db.one("""
-                SELECT role FROM user_account WHERE account_id = :id FOR UPDATE
-                """, Map.of("id", accountId));
         db.one("SELECT department_id FROM department WHERE department_id = :id", Map.of("id", departmentId));
-        if (!"DOCTOR".equals(account.get("role"))
-                || db.count("SELECT count(*) FROM staff WHERE account_id = :id", Map.of("id", accountId)) == 0) {
+
+        long accountId;
+        if (request.accountId() == null) {
+            String loginId = Values.clean(request.loginId(), 50);
+            if (request.initialPassword() == null || request.initialPassword().isBlank()) {
+                throw ApiException.badRequest();
+            }
+            accountId = accounts.createManagedAccount(loginId, passwords.encode(request.initialPassword()), Role.DOCTOR,
+                    !Boolean.FALSE.equals(request.accountActive()));
+        } else {
+            if (request.loginId() != null || request.initialPassword() != null || request.accountActive() != null) {
+                throw ApiException.badRequest();
+            }
+            accountId = lockUnlinkedDoctorAccount(positive(request.accountId()));
+        }
+
+        long doctorId = db.insert("""
+                INSERT INTO doctor(account_id, department_id, doctor_name, doctor_active)
+                VALUES (:account, :department, :name, :active) RETURNING doctor_id
+                """, Values.map("account", accountId, "department", departmentId, "name", name, "active", request.active()));
+        return view(db.one(SELECT + " WHERE d.doctor_id = :id", Map.of("id", doctorId)));
+    }
+
+    /** 기존 2단계 등록에서 계정만 만든 경우의 등록을 마무리한다. */
+    private long lockUnlinkedDoctorAccount(long accountId) {
+        Map<String, Object> account = db.one("SELECT role FROM user_account WHERE account_id = :id FOR UPDATE",
+                Map.of("id", accountId));
+        if (!"DOCTOR".equals(account.get("role"))) {
             throw new ApiException(400, "INVALID_DOCTOR_ACCOUNT", "DOCTOR 역할 계정만 연결할 수 있습니다.");
         }
         if (db.count("SELECT count(*) FROM doctor WHERE account_id = :id", Map.of("id", accountId)) > 0) {
             throw ApiException.conflict("ACCOUNT_ALREADY_LINKED", "이미 의사에 연결된 계정입니다.");
         }
-        long doctorId = db.insert("""
-                INSERT INTO doctor(account_id, department_id, doctor_name, doctor_active)
-                VALUES (:account, :department, :name, :active) RETURNING doctor_id
-                """, Values.map("account", accountId, "department", departmentId, "name", name, "active", request.active()));
-        db.update("UPDATE staff SET staff_name = :name WHERE account_id = :id", Values.map("name", name, "id", accountId));
-        return view(db.one(SELECT + " WHERE d.doctor_id = :id", Map.of("id", doctorId)));
+        return accountId;
     }
 
     @Transactional(readOnly = true)
@@ -83,16 +107,17 @@ public class AdminDoctorService {
         return view(db.one(SELECT + " WHERE d.doctor_id = :id", Map.of("id", doctorId)));
     }
 
-    /** 보낸 필드만 수정한다. 표시명은 staff와 같은 트랜잭션에서 동기화하고, 기존 예약은 건드리지 않는다. */
+    /** 보낸 필드만 수정한다. 활성 상태 변경은 기존 예약을 취소하지 않는다. */
     @Transactional
     public Map<String, Object> update(HospitalPrincipal user, long doctorId, JsonNode body) {
         user.require(Role.ADMIN);
         positive(doctorId);
         // accountId는 수정할 수 없으므로 허용 필드에 없다(보내면 400).
-        PatchBody patch = new PatchBody(body, Set.of("departmentId", "name", "active"));
+        PatchBody patch = new PatchBody(body, Set.of("departmentId", "name", "active", "accountActive"));
         Long requestedDepartment = patch.id("departmentId");
         String name = patch.text("name") == null ? null : Values.clean(patch.text("name"), 50);
         Boolean requestedActive = patch.bool("active");
+        Boolean accountActive = patch.bool("accountActive");
 
         Map<String, Object> current = db.one("""
                 SELECT account_id, department_id, doctor_name, doctor_active FROM doctor WHERE doctor_id = :id FOR UPDATE
@@ -108,9 +133,9 @@ public class AdminDoctorService {
                 UPDATE doctor SET department_id = :department, doctor_name = :name, doctor_active = :active
                  WHERE doctor_id = :id
                 """, Values.map("department", departmentId, "name", newName, "active", active, "id", doctorId));
-        if (name != null) {
-            db.update("UPDATE staff SET staff_name = :name WHERE account_id = :account",
-                    Values.map("name", name, "account", Values.id(current, "account_id")));
+        if (accountActive != null) {
+            db.update("UPDATE user_account SET account_status = :status WHERE account_id = :account",
+                    Map.of("status", accountActive ? "ACTIVE" : "INACTIVE", "account", Values.id(current, "account_id")));
         }
         return view(db.one(SELECT + " WHERE d.doctor_id = :id", Map.of("id", doctorId)));
     }
@@ -123,6 +148,7 @@ public class AdminDoctorService {
     private Map<String, Object> view(Map<String, Object> row) {
         return Values.map("doctorId", Values.id(row, "doctor_id"), "accountId", Values.id(row, "account_id"),
                 "departmentId", Values.id(row, "department_id"), "departmentName", row.get("department_name"),
-                "name", row.get("doctor_name"), "active", row.get("doctor_active"));
+                "name", row.get("doctor_name"), "active", row.get("doctor_active"),
+                "loginId", row.get("login_id"), "accountActive", row.get("account_active"));
     }
 }

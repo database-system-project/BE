@@ -1,5 +1,6 @@
 package com.databasesystem.hospital.admin;
 
+import com.databasesystem.hospital.auth.AccountRepository;
 import com.databasesystem.hospital.auth.HospitalPrincipal;
 import com.databasesystem.hospital.auth.Role;
 import com.databasesystem.hospital.common.ApiException;
@@ -16,31 +17,26 @@ import java.util.Map;
 @Service
 public class StaffAccountService {
     private final Database db;
+    private final AccountRepository accounts;
     private final PasswordEncoder passwords;
 
-    public StaffAccountService(Database db, PasswordEncoder passwords) {
+    public StaffAccountService(Database db, AccountRepository accounts, PasswordEncoder passwords) {
         this.db = db;
+        this.accounts = accounts;
         this.passwords = passwords;
     }
 
-    /** 직원 계정과 staff 프로필을 한 트랜잭션으로 만든다. DOCTOR의 doctor 프로필은 의사 등록 API에서 연결한다. */
+    /** 직원 계정과 staff 프로필을 한 트랜잭션으로 만든다. */
     @Transactional
     public Map<String, Object> create(HospitalPrincipal user, StaffAccountController.CreateRequest request) {
         user.require(Role.ADMIN);
-        if (request.role() == Role.PATIENT) { throw ApiException.badRequest(); }
+        if (!request.role().isStaff()) { throw ApiException.badRequest(); }
         String loginId = Values.clean(request.loginId(), 50);
         String name = Values.clean(request.name(), 50);
         boolean active = request.active();
 
-        // 비활성·환자 계정까지 포함해 중복을 막는다. 동시 요청은 uq_account_login(23505 → LOGIN_ID_TAKEN)이 최종 차단한다.
-        if (db.count("SELECT count(*) FROM user_account WHERE login_id = :login", Map.of("login", loginId)) > 0) {
-            throw ApiException.conflict("LOGIN_ID_TAKEN", "이미 사용 중인 로그인 아이디입니다.");
-        }
-        long accountId = db.insert("""
-                INSERT INTO user_account(login_id, password_hash, role, account_status)
-                VALUES (:login, :password, :role, :status) RETURNING account_id
-                """, Values.map("login", loginId, "password", passwords.encode(request.initialPassword()),
-                "role", request.role().name(), "status", active ? "ACTIVE" : "INACTIVE"));
+        long accountId = accounts.createManagedAccount(loginId, passwords.encode(request.initialPassword()),
+                request.role(), active);
         db.update("""
                 INSERT INTO staff(account_id, staff_name, staff_active)
                 VALUES (:account, :name, :active)
@@ -50,16 +46,16 @@ public class StaffAccountService {
                 "role", request.role().name(), "active", active);
     }
 
-    /** 직원 계정(PATIENT 제외)을 역할·활성 여부로 조회한다. accountId 오름차순, 결과가 없으면 빈 배열. */
+    /** 직원 계정을 역할·활성 여부로 조회한다. accountId 오름차순, 결과가 없으면 빈 배열. */
     @Transactional(readOnly = true)
     public Map<String, Object> list(HospitalPrincipal user, Role role, Boolean active) {
         user.require(Role.ADMIN);
-        if (role == Role.PATIENT) { throw ApiException.badRequest(); }
+        if (role != null && !role.isStaff()) { throw ApiException.badRequest(); }
         StringBuilder sql = new StringBuilder("""
                 SELECT a.account_id, a.login_id, a.role, s.staff_name,
                        (a.account_status = 'ACTIVE' AND s.staff_active) AS active
                   FROM user_account a JOIN staff s ON s.account_id = a.account_id
-                 WHERE a.role <> 'PATIENT'
+                 WHERE a.role IN ('RECEPTION', 'CASHIER', 'ADMIN')
                 """);
         Map<String, Object> parameters = new HashMap<>();
         if (role != null) {
@@ -79,22 +75,21 @@ public class StaffAccountService {
         return Map.of("items", items);
     }
 
-    /** 직원 계정 한 건과 연결된 staff·doctor 식별자를 조회한다. 직원 계정이 아니거나 없으면 404. */
+    /** 직원 계정 한 건과 연결된 staff 식별자를 조회한다. 직원 계정이 아니거나 없으면 404. */
     @Transactional(readOnly = true)
     public Map<String, Object> get(HospitalPrincipal user, long accountId) {
         user.require(Role.ADMIN);
         if (accountId <= 0) { throw ApiException.badRequest(); }
         Map<String, Object> row = db.one("""
-                SELECT a.account_id, a.login_id, a.role, s.staff_id, s.staff_name, d.doctor_id,
+                SELECT a.account_id, a.login_id, a.role, s.staff_id, s.staff_name,
                        (a.account_status = 'ACTIVE' AND s.staff_active) AS active
                   FROM user_account a
                   JOIN staff s ON s.account_id = a.account_id
-                  LEFT JOIN doctor d ON d.account_id = a.account_id
-                 WHERE a.account_id = :id AND a.role <> 'PATIENT'
+                 WHERE a.account_id = :id AND a.role IN ('RECEPTION', 'CASHIER', 'ADMIN')
                 """, Map.of("id", accountId));
         return Values.map("accountId", Values.id(row, "account_id"), "loginId", row.get("login_id"),
                 "name", row.get("staff_name"), "role", row.get("role"), "active", row.get("active"),
-                "staffId", Values.id(row, "staff_id"), "doctorId", Values.nullableId(row, "doctor_id"));
+                "staffId", Values.id(row, "staff_id"));
     }
 
     /**
@@ -107,14 +102,14 @@ public class StaffAccountService {
         user.require(Role.ADMIN);
         if (accountId <= 0) { throw ApiException.badRequest(); }
         if (request.name() == null && request.role() == null && request.active() == null) { throw ApiException.badRequest(); }
-        if (request.role() == Role.PATIENT) { throw ApiException.badRequest(); }
+        if (request.role() != null && !request.role().isStaff()) { throw ApiException.badRequest(); }
         String requestedName = request.name() == null ? null : Values.clean(request.name(), 50);
 
         db.rows("SELECT pg_advisory_xact_lock(8002, 1)", Map.of());
         Map<String, Object> current = db.one("""
                 SELECT a.role, a.account_status, a.login_id, s.staff_name, s.staff_active
                   FROM user_account a JOIN staff s ON s.account_id = a.account_id
-                 WHERE a.account_id = :id AND a.role <> 'PATIENT' FOR UPDATE OF a, s
+                 WHERE a.account_id = :id AND a.role IN ('RECEPTION', 'CASHIER', 'ADMIN') FOR UPDATE OF a, s
                 """, Map.of("id", accountId));
 
         Role currentRole = Role.valueOf(Values.text(current, "role"));
@@ -123,10 +118,6 @@ public class StaffAccountService {
         boolean newActive = request.active() == null ? currentActive : request.active();
         String newName = requestedName == null ? Values.text(current, "staff_name") : requestedName;
 
-        if (newRole != currentRole && newRole != Role.DOCTOR
-                && db.count("SELECT count(*) FROM doctor WHERE account_id = :id", Map.of("id", accountId)) > 0) {
-            throw ApiException.conflict("ACCOUNT_ROLE_CONFLICT", "연결된 의사 프로필 때문에 역할을 변경할 수 없습니다.");
-        }
         if (currentRole == Role.ADMIN && currentActive && !(newRole == Role.ADMIN && newActive)
                 && db.count("""
                         SELECT count(*) FROM user_account a JOIN staff s ON s.account_id = a.account_id
@@ -148,7 +139,6 @@ public class StaffAccountService {
         }
         if (requestedName != null) {
             db.update("UPDATE staff SET staff_name = :name WHERE account_id = :id", Values.map("name", newName, "id", accountId));
-            db.update("UPDATE doctor SET doctor_name = :name WHERE account_id = :id", Values.map("name", newName, "id", accountId));
         }
         return Values.map("accountId", accountId, "loginId", Values.text(current, "login_id"), "name", newName,
                 "role", newRole.name(), "active", newActive);

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,6 +55,7 @@ public class AdminDoctorController {
         return service.update(user, doctorId, body);
     }
 
-    public record CreateRequest(@NotNull Long accountId, @NotNull Long departmentId,
-                                @NotBlank String name, @NotNull Boolean active) { }
+    public record CreateRequest(Long accountId, String loginId, @Size(min = 8, max = 72) String initialPassword,
+                                @NotNull Long departmentId, @NotBlank String name, @NotNull Boolean active,
+                                Boolean accountActive) { }
 }

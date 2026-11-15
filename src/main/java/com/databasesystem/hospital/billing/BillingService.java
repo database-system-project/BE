@@ -56,7 +56,7 @@ public class BillingService {
 
     @Transactional
     public Map<String, Object> pay(HospitalPrincipal user, long visitId, long requestedFee) {
-        long staff = user.staff(); user.require(Role.CASHIER);
+        user.require(Role.CASHIER);
         Map<String, Object> visit = clinical.visit(visitId);
         db.lockPatient(id(visit, "patient_id"));
         db.one("SELECT visit_id FROM visit WHERE visit_id = :id FOR UPDATE", Map.of("id", visitId));
@@ -72,9 +72,9 @@ public class BillingService {
                     map("feeId", id(fee, "fee_id"), "feeType", type, "amount", fee.get("fee_amount"), "currency", "KRW"));
         }
         db.insert("""
-                INSERT INTO payment(visit_id, fee_id, paid_amount, paid_at, processed_by_staff_id)
-                VALUES (:visit, :fee, :amount, :now, :staff) RETURNING payment_id
-                """, map("visit", visitId, "fee", requestedFee, "amount", fee.get("fee_amount"), "now", now, "staff", staff));
+                INSERT INTO payment(visit_id, fee_id, paid_amount, paid_at, processed_by_account_id)
+                VALUES (:visit, :fee, :amount, :now, :account) RETURNING payment_id
+                """, map("visit", visitId, "fee", requestedFee, "amount", fee.get("fee_amount"), "now", now, "account", user.accountId()));
         return paid(payment(visitId));
     }
 

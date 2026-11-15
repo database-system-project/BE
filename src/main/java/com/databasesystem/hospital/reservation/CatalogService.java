@@ -30,13 +30,12 @@ public class CatalogService {
     private static final LocalTime LUNCH_START = LocalTime.of(12, 30);
     private static final LocalTime LUNCH_END = LocalTime.of(13, 30);
 
-    /** 예약 저장(validateSlot)과 같은 기준: 의사·진료과·직원·계정이 모두 활성이어야 한다. */
+    /** 예약 저장(validateSlot)과 같은 기준: 의사·진료과·계정이 모두 활성이어야 한다. */
     private static final String ACTIVE_DOCTOR = """
             FROM doctor d
             JOIN department dep ON dep.department_id = d.department_id
             JOIN user_account a ON a.account_id = d.account_id
-            JOIN staff s ON s.account_id = a.account_id
-            WHERE d.doctor_active AND dep.department_active AND a.account_status = 'ACTIVE' AND s.staff_active
+            WHERE d.doctor_active AND dep.department_active AND a.account_status = 'ACTIVE' AND a.role = 'DOCTOR'
             """;
     private final Database db;
     private final Clock clock;
