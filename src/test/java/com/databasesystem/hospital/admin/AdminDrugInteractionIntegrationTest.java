@@ -222,7 +222,7 @@ class AdminDrugInteractionIntegrationTest extends IntegrationSupport {
         long a = medication("약A");
         long b = medication("약B");
         create(admin, a, b, "권한 확인").andExpect(status().isCreated());
-        for (Actor actor : new Actor[] {null, staff(Role.DOCTOR), staff(Role.CASHIER), patient()}) {
+        for (Actor actor : new Actor[] {null, doctor().actor(), staff(Role.CASHIER), patient()}) {
             int expected = actor == null ? 401 : 403;
             create(actor, a, b, "x").andExpect(status().is(expected));
             call(actor, get(PATH)).andExpect(status().is(expected));

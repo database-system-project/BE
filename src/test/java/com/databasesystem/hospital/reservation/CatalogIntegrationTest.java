@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,14 +29,13 @@ class CatalogIntegrationTest extends IntegrationSupport {
                 Long.class, name, active);
     }
 
-    /** 활성 의사 계정·직원을 가진 의사를 만들고 필요하면 비활성 상태로 바꾼다. */
-    private long doctorIn(long department, String name, boolean doctorActive, boolean accountActive, boolean staffActive) {
-        Actor employee = staff(Role.DOCTOR);
+    /** 활성 의사 계정을 가진 의사를 만들고 필요하면 비활성 상태로 바꾼다. */
+    private long doctorIn(long department, String name, boolean doctorActive, boolean accountActive) {
+        long accountId = account("doctor_" + UUID.randomUUID(), Role.DOCTOR);
         long doctor = jdbc.queryForObject("""
                 INSERT INTO doctor(account_id, department_id, doctor_name, doctor_active) VALUES (?, ?, ?, ?) RETURNING doctor_id
-                """, Long.class, employee.accountId(), department, name, doctorActive);
-        if (!accountActive) { jdbc.update("UPDATE user_account SET account_status = 'INACTIVE' WHERE account_id = ?", employee.accountId()); }
-        if (!staffActive) { jdbc.update("UPDATE staff SET staff_active = FALSE WHERE account_id = ?", employee.accountId()); }
+                """, Long.class, accountId, department, name, doctorActive);
+        if (!accountActive) { jdbc.update("UPDATE user_account SET account_status = 'INACTIVE' WHERE account_id = ?", accountId); }
         return doctor;
     }
 
@@ -83,7 +83,7 @@ class CatalogIntegrationTest extends IntegrationSupport {
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
         call(null, "/api/v1/departments").andExpect(status().isUnauthorized());
         for (Role role : List.of(Role.ADMIN, Role.DOCTOR, Role.RECEPTION, Role.CASHIER)) {
-            call(staff(role), "/api/v1/departments").andExpect(status().isForbidden());
+            call(role == Role.DOCTOR ? doctor().actor() : staff(role), "/api/v1/departments").andExpect(status().isForbidden());
         }
     }
 
@@ -94,13 +94,12 @@ class CatalogIntegrationTest extends IntegrationSupport {
         Actor patient = patient();
         long department = department("내과", true);
         long other = department("외과", true);
-        long kim = doctorIn(department, "Kim", true, true, true);
-        long abe = doctorIn(department, "Abe", true, true, true);
-        long abe2 = doctorIn(department, "Abe", true, true, true);
-        doctorIn(department, "Inactive", false, true, true);
-        doctorIn(department, "AccountOff", true, false, true);
-        doctorIn(department, "StaffOff", true, true, false);
-        doctorIn(other, "Elsewhere", true, true, true);
+        long kim = doctorIn(department, "Kim", true, true);
+        long abe = doctorIn(department, "Abe", true, true);
+        long abe2 = doctorIn(department, "Abe", true, true);
+        doctorIn(department, "Inactive", false, true);
+        doctorIn(department, "AccountOff", true, false);
+        doctorIn(other, "Elsewhere", true, true);
 
         JsonNode items = body(call(patient, "/api/v1/departments/" + department + "/doctors")).get("items");
         assertThat(items).hasSize(3);
@@ -125,7 +124,7 @@ class CatalogIntegrationTest extends IntegrationSupport {
         call(patient, "/api/v1/departments/abc/doctors").andExpect(status().isBadRequest());
         call(patient, "/api/v1/departments/" + active + "/doctors?x=1").andExpect(status().isBadRequest());
         call(null, "/api/v1/departments/" + active + "/doctors").andExpect(status().isUnauthorized());
-        call(staff(Role.DOCTOR), "/api/v1/departments/" + active + "/doctors").andExpect(status().isForbidden());
+        call(doctor().actor(), "/api/v1/departments/" + active + "/doctors").andExpect(status().isForbidden());
         call(staff(Role.ADMIN), "/api/v1/departments/" + active + "/doctors").andExpect(status().isForbidden());
     }
 
@@ -207,11 +206,10 @@ class CatalogIntegrationTest extends IntegrationSupport {
         String query = "/availability?from=2026-11-10&to=2026-11-17";
         long department = department("내과", true);
         long inactiveDepartment = department("폐지과", false);
-        long off = doctorIn(department, "비활성의사", false, true, true);
-        long accountOff = doctorIn(department, "계정비활성", true, false, true);
-        long staffOff = doctorIn(department, "직원비활성", true, true, false);
-        long inDeadDepartment = doctorIn(inactiveDepartment, "폐지과의사", true, true, true);
-        for (long id : List.of(off, accountOff, staffOff, inDeadDepartment, 999_999_999L)) {
+        long off = doctorIn(department, "비활성의사", false, true);
+        long accountOff = doctorIn(department, "계정비활성", true, false);
+        long inDeadDepartment = doctorIn(inactiveDepartment, "폐지과의사", true, true);
+        for (long id : List.of(off, accountOff, inDeadDepartment, 999_999_999L)) {
             if (id != 999_999_999L) { schedule(id, "2026-11-12", false); }
             call(patient, "/api/v1/doctors/" + id + query).andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.code").value("NOT_FOUND"));

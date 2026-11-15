@@ -270,7 +270,7 @@ class AdminScheduleIntegrationTest extends IntegrationSupport {
         Actor admin = staff(Role.ADMIN);
         Doctor doctor = doctor();
         long id = doctor.scheduleId();
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient(), doctor.actor())) {
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), patient(), doctor.actor())) {
             create(other, doctor.doctorId(), "2026-11-11", false).andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
             getAs(PATH, other).andExpect(status().isForbidden());
             getAs(PATH + "/" + id, other).andExpect(status().isForbidden());

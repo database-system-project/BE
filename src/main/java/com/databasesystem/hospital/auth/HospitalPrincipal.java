@@ -21,9 +21,4 @@ public record HospitalPrincipal(long accountId, String loginId, String name, Rol
         if (doctorId == null) { throw ApiException.forbidden(); }
         return doctorId;
     }
-
-    public long staff() {
-        if (role == Role.PATIENT || staffId == null) { throw ApiException.forbidden(); }
-        return staffId;
-    }
 }

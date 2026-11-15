@@ -53,7 +53,7 @@ class BillingIntegrationTest extends IntegrationSupport {
             assertThat(results.get(0).get(10, TimeUnit.SECONDS)).isEqualTo(results.get(1).get(10, TimeUnit.SECONDS));
         }
         assertThat(jdbc.queryForObject("SELECT count(*) FROM payment", Long.class)).isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT processed_by_staff_id FROM payment", Long.class)).isEqualTo(cashier.staffId());
+        assertThat(jdbc.queryForObject("SELECT processed_by_account_id FROM payment", Long.class)).isEqualTo(cashier.accountId());
     }
 
     @Test

@@ -45,9 +45,9 @@ class HistoryIntegrationTest extends IntegrationSupport {
         jdbc.update("UPDATE medicine SET medicine_active = false WHERE medicine_id = ?", medicine);
         long fee = fee("FIRST_VISIT", 18000, NOW.minusSeconds(3600), admin);
         long payment = jdbc.queryForObject("""
-                INSERT INTO payment(visit_id, fee_id, paid_amount, paid_at, processed_by_staff_id)
+                INSERT INTO payment(visit_id, fee_id, paid_amount, paid_at, processed_by_account_id)
                 VALUES (?, ?, 18000, ?, ?) RETURNING payment_id
-                """, Long.class, visit, fee, time(NOW), cashier.staffId());
+                """, Long.class, visit, fee, time(NOW), cashier.accountId());
         getAs("/api/v1/me/visits/" + visit, patient).andExpect(status().isOk())
                 .andExpect(jsonPath("$.medicalRecord.diagnosis").value("시연 진단"))
                 .andExpect(jsonPath("$.paymentId").value(payment)).andExpect(jsonPath("$.prescriptions[0].status").value("CANCELLED"));

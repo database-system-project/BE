@@ -13,6 +13,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,30 +37,77 @@ class AdminDoctorIntegrationTest extends IntegrationSupport {
 
     private long doctorCount() { return jdbc.queryForObject("SELECT count(*) FROM doctor", Long.class); }
 
+    private ResultActions register(Actor admin, String loginId, long departmentId, String name, boolean active) throws Exception {
+        return postAs(PATH, admin, Values.map("loginId", loginId, "initialPassword", PASSWORD,
+                "departmentId", departmentId, "name", name, "active", active));
+    }
+
+    private ResultActions login(String loginId) throws Exception {
+        return mvc.perform(post("/api/v1/auth/login").contentType("application/json")
+                .content(mapper.writeValueAsString(Map.of("loginId", loginId, "password", PASSWORD))));
+    }
+
     @Test
-    void linksADoctorProfileAndSyncsTheStaffName() throws Exception {
+    void createsDoctorAndAccountInOneRequestAndAllowsLoginWithoutAStaffProfile() throws Exception {
         Actor admin = staff(Role.ADMIN);
-        Actor account = staff(Role.DOCTOR);
         long dept = department("내과");
-        link(admin, account.accountId(), dept, "  이정훈  ", true).andExpect(status().isCreated())
+        register(admin, "  new_doctor  ", dept, "  이정훈  ", true).andExpect(status().isCreated())
                 .andExpect(jsonPath("$.doctorId").isNumber())
-                .andExpect(jsonPath("$.accountId").value(account.accountId()))
+                .andExpect(jsonPath("$.accountId").isNumber())
+                .andExpect(jsonPath("$.loginId").value("new_doctor"))
                 .andExpect(jsonPath("$.departmentId").value(dept))
                 .andExpect(jsonPath("$.departmentName").value(org.hamcrest.Matchers.startsWith("내과")))
-                .andExpect(jsonPath("$.name").value("이정훈")).andExpect(jsonPath("$.active").value(true));
-        assertThat(jdbc.queryForObject("SELECT staff_name FROM staff WHERE account_id = ?", String.class, account.accountId()))
-                .isEqualTo("이정훈");
-        assertThat(jdbc.queryForObject("SELECT doctor_name FROM doctor WHERE account_id = ?", String.class, account.accountId()))
-                .isEqualTo("이정훈");
+                .andExpect(jsonPath("$.name").value("이정훈")).andExpect(jsonPath("$.active").value(true))
+                .andExpect(jsonPath("$.accountActive").value(true))
+                .andExpect(jsonPath("$.initialPassword").doesNotExist());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM staff", Long.class)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT doctor_name FROM doctor", String.class)).isEqualTo("이정훈");
+        var loggedIn = login("new_doctor").andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role").value("DOCTOR"))
+                .andExpect(jsonPath("$.user.name").value("이정훈"))
+                .andExpect(jsonPath("$.user.doctorId").isNumber())
+                .andExpect(jsonPath("$.user.staffId").doesNotHaveJsonPath());
+        String token = mapper.readTree(loggedIn.andReturn().getResponse().getContentAsString()).get("accessToken").asText();
+        mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + token)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.doctorId").isNumber())
+                .andExpect(jsonPath("$.profile.staffId").doesNotHaveJsonPath());
+
+        register(admin, "new_doctor", dept, "중복이름", true).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LOGIN_ID_TAKEN"));
+        register(admin, "missing_department_doctor", 999_999_999L, "미등록의사", true).andExpect(status().isNotFound());
+        assertThat(doctorCount()).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM user_account WHERE role = 'DOCTOR'", Long.class)).isEqualTo(1L);
+    }
+
+    @Test
+    void doctorProfileAndAccountActivityCanBeManagedIndependently() throws Exception {
+        Actor admin = staff(Role.ADMIN);
+        Doctor doctor = doctor();
+        String loginId = doctor.actor().loginId();
+        patchAs(admin, doctor.doctorId(), "{\"active\":false}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountActive").value(true));
+        login(loginId).andExpect(status().isOk());
+
+        patchAs(admin, doctor.doctorId(), "{\"accountActive\":false}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.active").value(false))
+                .andExpect(jsonPath("$.accountActive").value(false));
+        login(loginId).andExpect(status().isUnauthorized());
+        getAs("/api/v1/me", doctor.actor()).andExpect(status().isUnauthorized());
+
+        patchAs(admin, doctor.doctorId(), "{\"accountActive\":true}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountActive").value(true));
+        login(loginId).andExpect(status().isOk());
     }
 
     @Test
     void rejectsAlreadyLinkedWrongRoleAndMissingTargets() throws Exception {
         Actor admin = staff(Role.ADMIN);
         long dept = department("내과");
-        Actor account = staff(Role.DOCTOR);
-        link(admin, account.accountId(), dept, "이정훈", true).andExpect(status().isCreated());
-        link(admin, account.accountId(), dept, "다른이름", true).andExpect(status().isConflict())
+        long account = account("unlinked_doctor", Role.DOCTOR);
+        login("unlinked_doctor").andExpect(status().isUnauthorized());
+        link(admin, account, dept, "이정훈", true).andExpect(status().isCreated());
+        login("unlinked_doctor").andExpect(status().isOk());
+        link(admin, account, dept, "다른이름", true).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("ACCOUNT_ALREADY_LINKED"))
                 .andExpect(jsonPath("$.message").value("이미 의사에 연결된 계정입니다."));
 
@@ -68,29 +116,34 @@ class AdminDoctorIntegrationTest extends IntegrationSupport {
                     .andExpect(jsonPath("$.code").value("INVALID_DOCTOR_ACCOUNT"))
                     .andExpect(jsonPath("$.message").value("DOCTOR 역할 계정만 연결할 수 있습니다."));
         }
-        Actor free = staff(Role.DOCTOR);
+        long free = account("unlinked_free_doctor", Role.DOCTOR);
         link(admin, 999_999_999L, dept, "이정훈", true).andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
-        link(admin, free.accountId(), 999_999_999L, "이정훈", true).andExpect(status().isNotFound());
+        link(admin, free, 999_999_999L, "이정훈", true).andExpect(status().isNotFound());
         assertThat(doctorCount()).isEqualTo(1L);
     }
 
     @Test
     void invalidCreateRequestsAreRejected() throws Exception {
         Actor admin = staff(Role.ADMIN);
-        Actor account = staff(Role.DOCTOR);
+        long account = account("unlinked_doctor", Role.DOCTOR);
         long dept = department("내과");
         List<Map<String, Object>> bodies = List.of(
-                Values.map("accountId", account.accountId(), "departmentId", dept, "name", "  ", "active", true),
-                Values.map("accountId", account.accountId(), "departmentId", dept, "name", "가".repeat(51), "active", true),
+                Values.map("accountId", account, "departmentId", dept, "name", "  ", "active", true),
+                Values.map("accountId", account, "departmentId", dept, "name", "가".repeat(51), "active", true),
                 Values.map("departmentId", dept, "name", "이정훈", "active", true),
-                Values.map("accountId", account.accountId(), "name", "이정훈", "active", true),
-                Values.map("accountId", account.accountId(), "departmentId", dept, "active", true),
-                Values.map("accountId", account.accountId(), "departmentId", dept, "name", "이정훈"),
+                Values.map("loginId", "new_doctor", "departmentId", dept, "name", "이정훈", "active", true),
+                Values.map("loginId", "new_doctor", "initialPassword", "short",
+                        "departmentId", dept, "name", "이정훈", "active", true),
+                Values.map("accountId", account, "loginId", "new_doctor", "initialPassword", PASSWORD,
+                        "departmentId", dept, "name", "이정훈", "active", true),
+                Values.map("accountId", account, "name", "이정훈", "active", true),
+                Values.map("accountId", account, "departmentId", dept, "active", true),
+                Values.map("accountId", account, "departmentId", dept, "name", "이정훈"),
                 Values.map("accountId", "13", "departmentId", dept, "name", "이정훈", "active", true),
                 Values.map("accountId", 0, "departmentId", dept, "name", "이정훈", "active", true),
-                Values.map("accountId", account.accountId(), "departmentId", -1, "name", "이정훈", "active", true),
-                Values.map("accountId", account.accountId(), "departmentId", dept, "name", "이정훈", "active", "true"),
-                Values.map("accountId", account.accountId(), "departmentId", dept, "name", "이정훈", "active", true, "extra", 1));
+                Values.map("accountId", account, "departmentId", -1, "name", "이정훈", "active", true),
+                Values.map("accountId", account, "departmentId", dept, "name", "이정훈", "active", "true"),
+                Values.map("accountId", account, "departmentId", dept, "name", "이정훈", "active", true, "extra", 1));
         for (Map<String, Object> body : bodies) {
             postAs(PATH, admin, body).andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
         }
@@ -102,10 +155,9 @@ class AdminDoctorIntegrationTest extends IntegrationSupport {
         Actor admin = staff(Role.ADMIN);
         long internal = department("내과");
         long surgery = department("외과");
-        Actor a = staff(Role.DOCTOR), b = staff(Role.DOCTOR), c = staff(Role.DOCTOR);
-        link(admin, a.accountId(), internal, "김철수", true).andExpect(status().isCreated());
-        link(admin, b.accountId(), internal, "김영희", false).andExpect(status().isCreated());
-        link(admin, c.accountId(), surgery, "이정훈", true).andExpect(status().isCreated());
+        register(admin, "doctor_a", internal, "김철수", true).andExpect(status().isCreated());
+        register(admin, "doctor_b", internal, "김영희", false).andExpect(status().isCreated());
+        register(admin, "doctor_c", surgery, "이정훈", true).andExpect(status().isCreated());
 
         assertThat(items(PATH, admin)).hasSize(3);
         assertThat(items(PATH + "?departmentId=" + internal, admin)).containsExactlyInAnyOrder("김철수", "김영희");
@@ -154,8 +206,9 @@ class AdminDoctorIntegrationTest extends IntegrationSupport {
                 .andExpect(jsonPath("$.name").value("새이름")).andExpect(jsonPath("$.departmentId").value(other))
                 .andExpect(jsonPath("$.departmentName").value(org.hamcrest.Matchers.startsWith("외과")))
                 .andExpect(jsonPath("$.active").value(false)).andExpect(jsonPath("$.accountId").value(doctor.actor().accountId()));
-        assertThat(jdbc.queryForObject("SELECT staff_name FROM staff WHERE account_id = ?", String.class, doctor.actor().accountId()))
+        assertThat(jdbc.queryForObject("SELECT doctor_name FROM doctor WHERE account_id = ?", String.class, doctor.actor().accountId()))
                 .isEqualTo("새이름");
+        login(doctor.actor().loginId()).andExpect(status().isOk()).andExpect(jsonPath("$.user.name").value("새이름"));
         assertThat(jdbc.queryForObject("SELECT reservation_status FROM reservation WHERE reservation_id = ?", String.class, reservation))
                 .isEqualTo("RESERVED");
         patchAs(admin, doctor.doctorId(), "{\"departmentId\":999999999}").andExpect(status().isNotFound());
@@ -185,9 +238,9 @@ class AdminDoctorIntegrationTest extends IntegrationSupport {
     void onlyAdminsCanManageDoctors() throws Exception {
         Actor admin = staff(Role.ADMIN);
         Doctor doctor = doctor();
-        Actor account = staff(Role.DOCTOR);
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient(), doctor.actor())) {
-            link(other, account.accountId(), doctor.departmentId(), "이정훈", true)
+        long account = account("unlinked_doctor", Role.DOCTOR);
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), patient(), doctor.actor())) {
+            link(other, account, doctor.departmentId(), "이정훈", true)
                     .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
             getAs(PATH, other).andExpect(status().isForbidden());
             getAs(PATH + "/" + doctor.doctorId(), other).andExpect(status().isForbidden());

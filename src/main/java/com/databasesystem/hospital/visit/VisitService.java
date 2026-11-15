@@ -64,9 +64,9 @@ public class VisitService {
         }
         db.update("UPDATE reservation SET reservation_status = 'CHECKED_IN' WHERE reservation_id = :id", Map.of("id", id));
         long visit = db.insert("""
-                INSERT INTO visit(reservation_id, checked_in_at, checked_in_by_staff_id)
-                VALUES (:id, :at, :staff) RETURNING visit_id
-                """, Values.map("id", id, "at", clock.instant(), "staff", user.staff()));
+                INSERT INTO visit(reservation_id, checked_in_at, checked_in_by_account_id)
+                VALUES (:id, :at, :account) RETURNING visit_id
+                """, Values.map("id", id, "at", clock.instant(), "account", user.accountId()));
         return Values.map("appointmentId", id, "appointmentStatus", "CHECKED_IN", "visit", Views.visit(clinical.visit(visit)));
     }
 
@@ -103,8 +103,8 @@ public class VisitService {
         }
         db.update("""
                 UPDATE visit SET visit_status = 'CANCELLED', visit_cancelled_at = :at,
-                    cancelled_by_staff_id = :staff, cancel_reason = :reason WHERE visit_id = :id
-                """, Values.map("id", id, "at", clock.instant(), "staff", user.staff(), "reason", reason));
+                    cancelled_by_account_id = :account, cancel_reason = :reason WHERE visit_id = :id
+                """, Values.map("id", id, "at", clock.instant(), "account", user.accountId(), "reason", reason));
         db.update("""
                 UPDATE reservation SET reservation_status = 'CANCELLED', reservation_cancelled_at = :at
                  WHERE reservation_id = :id

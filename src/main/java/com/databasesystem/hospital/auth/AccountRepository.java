@@ -1,5 +1,6 @@
 package com.databasesystem.hospital.auth;
 
+import com.databasesystem.hospital.common.ApiException;
 import com.databasesystem.hospital.common.Database;
 import com.databasesystem.hospital.common.Values;
 import org.springframework.stereotype.Repository;
@@ -11,12 +12,15 @@ import java.util.Optional;
 public class AccountRepository {
     private static final String ACCOUNT = """
             SELECT a.*, p.patient_id, s.staff_id, d.doctor_id,
-                   COALESCE(p.patient_name, s.staff_name) AS display_name,
-                   COALESCE(s.staff_active, TRUE) AS staff_active
+                   CASE a.role
+                       WHEN 'PATIENT' THEN p.patient_name
+                       WHEN 'DOCTOR' THEN d.doctor_name
+                       ELSE s.staff_name
+                   END AS display_name, s.staff_active
               FROM user_account a
-              LEFT JOIN patient p ON p.account_id = a.account_id
-              LEFT JOIN staff s ON s.account_id = a.account_id
-              LEFT JOIN doctor d ON d.account_id = a.account_id
+              LEFT JOIN patient p ON p.account_id = a.account_id AND a.role = 'PATIENT'
+              LEFT JOIN staff s ON s.account_id = a.account_id AND a.role IN ('RECEPTION', 'CASHIER', 'ADMIN')
+              LEFT JOIN doctor d ON d.account_id = a.account_id AND a.role = 'DOCTOR'
             """;
     private final Database db;
 
@@ -32,10 +36,25 @@ public class AccountRepository {
     }
 
     public boolean isActive(Map<String, Object> row) {
-        return "ACTIVE".equals(row.get("account_status")) && Boolean.TRUE.equals(row.get("staff_active"))
-                && row.get("display_name") != null
-                && (!"PATIENT".equals(row.get("role")) || row.get("patient_id") != null)
-                && ("PATIENT".equals(row.get("role")) || row.get("staff_id") != null);
+        if (!"ACTIVE".equals(row.get("account_status")) || row.get("display_name") == null) {
+            return false;
+        }
+        return switch (Role.valueOf(Values.text(row, "role"))) {
+            case PATIENT -> row.get("patient_id") != null;
+            case DOCTOR -> row.get("doctor_id") != null;
+            default -> row.get("staff_id") != null && Boolean.TRUE.equals(row.get("staff_active"));
+        };
+    }
+
+    public long createManagedAccount(String loginId, String passwordHash, Role role, boolean active) {
+        if (db.count("SELECT count(*) FROM user_account WHERE login_id = :login", Map.of("login", loginId)) > 0) {
+            throw ApiException.conflict("LOGIN_ID_TAKEN", "이미 사용 중인 로그인 아이디입니다.");
+        }
+        return db.insert("""
+                INSERT INTO user_account(login_id, password_hash, role, account_status)
+                VALUES (:login, :password, :role, :status) RETURNING account_id
+                """, Map.of("login", loginId, "password", passwordHash, "role", role.name(),
+                "status", active ? "ACTIVE" : "INACTIVE"));
     }
 
     public HospitalPrincipal principal(Map<String, Object> row) {

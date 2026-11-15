@@ -49,7 +49,7 @@ class AdminConsultationFeeIntegrationTest extends IntegrationSupport {
                 .andExpect(jsonPath("$.effectiveFrom").value("2026-12-01T00:00:00+09:00"));
         Map<String, Object> row = jdbc.queryForMap("SELECT * FROM consultation_fee");
         assertThat(row).containsEntry("fee_type", "FIRST_VISIT").containsEntry("fee_amount", 19000)
-                .containsEntry("set_by_staff_id", admin.staffId());
+                .containsEntry("set_by_account_id", admin.accountId());
         assertThat(jdbc.queryForObject("SELECT effective_from = TIMESTAMPTZ '2026-11-30 15:00:00+00' FROM consultation_fee",
                 Boolean.class)).isTrue();
     }
@@ -174,7 +174,7 @@ class AdminConsultationFeeIntegrationTest extends IntegrationSupport {
         Actor admin = staff(Role.ADMIN);
         fee("FIRST_VISIT", 18000, PAST, admin);
         fee("FOLLOW_UP", 15000, PAST, admin);
-        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), staff(Role.DOCTOR), patient())) {
+        for (Actor other : List.of(staff(Role.RECEPTION), staff(Role.CASHIER), doctor().actor(), patient())) {
             getAs(PATH, other).andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
             patchFee(other, "FIRST_VISIT", 19000, "2026-12-01T00:00:00+09:00").andExpect(status().isForbidden());
         }

@@ -63,8 +63,8 @@ class PatientIntegrationTest extends IntegrationSupport {
                         .content("{\"birthDate\":\"2018-03-23\",\"gender\":\"F\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.gender").value("F"));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM patient_demographic_audit", Long.class)).isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT changed_by_staff_id FROM patient_demographic_audit", Long.class))
-                .isEqualTo(receptionist.staffId());
+        assertThat(jdbc.queryForObject("SELECT changed_by_account_id FROM patient_demographic_audit", Long.class))
+                .isEqualTo(receptionist.accountId());
     }
 
     @Test

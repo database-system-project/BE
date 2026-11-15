@@ -71,16 +71,17 @@ public abstract class IntegrationSupport {
     }
 
     protected Doctor doctor() {
-        Actor employee = staff(Role.DOCTOR);
+        String login = "doctor_" + UUID.randomUUID().toString().substring(0, 12);
+        long accountId = account(login, Role.DOCTOR);
         long department = jdbc.queryForObject("INSERT INTO department(department_name) VALUES (?) RETURNING department_id",
                 Long.class, "내과" + UUID.randomUUID().toString().substring(0, 8));
         long doctor = jdbc.queryForObject("""
                 INSERT INTO doctor(account_id, department_id, doctor_name) VALUES (?, ?, '테스트의사') RETURNING doctor_id
-                """, Long.class, employee.accountId(), department);
+                """, Long.class, accountId, department);
         long schedule = jdbc.queryForObject("""
                 INSERT INTO doctor_schedule(doctor_id, schedule_date) VALUES (?, ?) RETURNING schedule_id
                 """, Long.class, doctor, TODAY);
-        Actor actor = actor(employee.accountId(), null, doctor, employee.staffId(), employee.loginId());
+        Actor actor = actor(accountId, null, doctor, null, login);
         return new Doctor(doctor, schedule, department, actor);
     }
 
@@ -97,9 +98,9 @@ public abstract class IntegrationSupport {
         jdbc.update("UPDATE reservation SET reservation_status = 'CHECKED_IN' WHERE reservation_id = ?", reservation);
         Actor receptionist = staff(Role.RECEPTION);
         return jdbc.queryForObject("""
-                INSERT INTO visit(reservation_id, checked_in_at, checked_in_by_staff_id, visit_status, started_at, completed_at)
+                INSERT INTO visit(reservation_id, checked_in_at, checked_in_by_account_id, visit_status, started_at, completed_at)
                 VALUES (?, ?, ?, ?, ?, ?) RETURNING visit_id
-                """, Long.class, reservation, time(NOW.minusSeconds(180)), receptionist.staffId(), status,
+                """, Long.class, reservation, time(NOW.minusSeconds(180)), receptionist.accountId(), status,
                 "WAITING".equals(status) ? null : time(NOW.minusSeconds(120)),
                 "COMPLETED".equals(status) ? time(NOW.minusSeconds(60)) : null);
     }
@@ -119,9 +120,9 @@ public abstract class IntegrationSupport {
 
     protected long fee(String type, int amount, Instant effective, Actor admin) {
         return jdbc.queryForObject("""
-                INSERT INTO consultation_fee(fee_type, fee_amount, effective_from, set_by_staff_id)
+                INSERT INTO consultation_fee(fee_type, fee_amount, effective_from, set_by_account_id)
                 VALUES (?, ?, ?, ?) RETURNING fee_id
-                """, Long.class, type, amount, time(effective), admin.staffId());
+                """, Long.class, type, amount, time(effective), admin.accountId());
     }
 
     protected ResultActions getAs(String path, Actor actor) throws Exception {
@@ -136,7 +137,7 @@ public abstract class IntegrationSupport {
 
     protected OffsetDateTime time(Instant instant) { return instant.atOffset(ZoneOffset.UTC); }
 
-    private long account(String login, Role role) {
+    protected long account(String login, Role role) {
         return jdbc.queryForObject("""
                 INSERT INTO user_account(login_id, password_hash, role) VALUES (?, ?, ?) RETURNING account_id
                 """, Long.class, login, passwords.encode(PASSWORD), role.name());

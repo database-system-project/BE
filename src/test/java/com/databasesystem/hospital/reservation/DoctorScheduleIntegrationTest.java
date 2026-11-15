@@ -97,12 +97,14 @@ class DoctorScheduleIntegrationTest extends IntegrationSupport {
 
     @Test
     void onlyDoctorsWithAValidTokenCanReadTheirSchedules() throws Exception {
-        doctor();
+        Doctor doctor = doctor();
         call(null, "").andExpect(status().isUnauthorized());
         for (Actor actor : new Actor[] {patient(), staff(Role.ADMIN), staff(Role.RECEPTION), staff(Role.CASHIER)}) {
             call(actor, "").andExpect(status().isForbidden());
         }
         // 의사 역할이지만 의사 정보가 없는 계정도 거절한다.
-        call(staff(Role.DOCTOR), "").andExpect(status().isForbidden());
+        jdbc.update("DELETE FROM doctor_schedule WHERE doctor_id = ?", doctor.doctorId());
+        jdbc.update("DELETE FROM doctor WHERE doctor_id = ?", doctor.doctorId());
+        call(doctor.actor(), "").andExpect(status().isUnauthorized());
     }
 }

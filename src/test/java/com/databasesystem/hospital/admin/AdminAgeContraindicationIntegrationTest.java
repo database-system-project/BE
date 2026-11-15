@@ -251,7 +251,7 @@ class AdminAgeContraindicationIntegrationTest extends IntegrationSupport {
         Actor admin = staff(Role.ADMIN);
         long a = medication("약A");
         create(admin, a, 12, "LT", "권한 확인").andExpect(status().isCreated());
-        for (Actor actor : new Actor[] {null, staff(Role.DOCTOR), staff(Role.RECEPTION), patient()}) {
+        for (Actor actor : new Actor[] {null, doctor().actor(), staff(Role.RECEPTION), patient()}) {
             int expected = actor == null ? 401 : 403;
             create(actor, a, 13, "LT", "x").andExpect(status().is(expected));
             call(actor, get(PATH)).andExpect(status().is(expected));

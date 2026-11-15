@@ -35,17 +35,16 @@ public class PatientService {
         Map<String, Object> profile;
         if (principal.role() == Role.PATIENT) {
             profile = Views.patient(patient(principal.patient()));
-        } else if (principal.role() == Role.DOCTOR && principal.doctorId() != null) {
+        } else if (principal.role() == Role.DOCTOR) {
             var row = db.one("""
                     SELECT d.doctor_id, d.department_id, dep.department_name
                       FROM doctor d JOIN department dep ON dep.department_id = d.department_id
                      WHERE d.doctor_id = :id
-                    """, Map.of("id", principal.doctorId()));
+                    """, Map.of("id", principal.doctor()));
             profile = Values.map("doctorId", principal.doctorId(), "departmentId", row.get("department_id"),
                     "departmentName", row.get("department_name"));
         } else {
             profile = Values.map("staffId", principal.staffId(), "name", principal.name());
-            if (principal.role() == Role.DOCTOR) { profile.put("doctorId", null); }
         }
         return Values.map("accountId", principal.accountId(), "loginId", principal.loginId(),
                 "name", principal.name(), "role", principal.role().name(), "active", true, "profile", profile);
@@ -132,10 +131,10 @@ public class PatientService {
         db.update("UPDATE patient SET birth_date = :birth, gender = :gender WHERE patient_id = :id",
                 Map.of("id", patientId, "birth", birth, "gender", gender));
         db.update("""
-                INSERT INTO patient_demographic_audit(patient_id, changed_by_staff_id, previous_birth_date,
+                INSERT INTO patient_demographic_audit(patient_id, changed_by_account_id, previous_birth_date,
                     new_birth_date, previous_gender, new_gender, changed_at)
-                VALUES (:id, :staff, :previousBirth, :birth, :previousGender, :gender, :at)
-                """, Values.map("id", patientId, "staff", principal.staff(), "previousBirth", Values.date(old, "birth_date"),
+                VALUES (:id, :account, :previousBirth, :birth, :previousGender, :gender, :at)
+                """, Values.map("id", patientId, "account", principal.accountId(), "previousBirth", Values.date(old, "birth_date"),
                 "birth", birth, "previousGender", old.get("gender"), "gender", gender, "at", clock.instant()));
         return Views.patient(patient(patientId));
     }
