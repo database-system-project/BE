@@ -116,6 +116,38 @@ class PrescriptionIntegrationTest extends IntegrationSupport {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM prescription", Long.class)).isEqualTo(1);
     }
 
+    @Test
+    void warningsAndVisitDetailIncludeMedicationNames() throws Exception {
+        Actor patient = patient(); Doctor doctor = doctor();
+        long previous = visit(patient, doctor, "IN_PROGRESS");
+        long a = medication("Alpha약"), b = medication("Bravo약");
+        jdbc.update("INSERT INTO drug_interaction VALUES (?, ?, '병용 경고')", a, b);
+        jdbc.update("INSERT INTO age_contraindication VALUES (?, 1, 12, 'LT', '연령 경고')", b);
+        postAs("/api/v1/doctor/visits/" + previous + "/prescriptions", doctor.actor(), Map.of("items", List.of(item(a))))
+                .andExpect(status().isCreated());
+        jdbc.update("UPDATE visit SET visit_status = 'COMPLETED', completed_at = ? WHERE visit_id = ?", time(NOW), previous);
+        long current = visit(patient, doctor, "IN_PROGRESS");
+        String path = "/api/v1/doctor/visits/" + current;
+
+        postAs(path + "/prescription-checks", doctor.actor(), Map.of("medicationIds", List.of(b)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.warnings.length()").value(2))
+                .andExpect(jsonPath("$.warnings[0].type").value("AGE"))
+                .andExpect(jsonPath("$.warnings[0].medicationNames.length()").value(1))
+                .andExpect(jsonPath("$.warnings[0].medicationNames[0]").value("Bravo약"))
+                .andExpect(jsonPath("$.warnings[1].type").value("INTERACTION"))
+                .andExpect(jsonPath("$.warnings[1].medicationIds[0]").value(a))
+                .andExpect(jsonPath("$.warnings[1].medicationNames[0]").value("Alpha약"))
+                .andExpect(jsonPath("$.warnings[1].medicationNames[1]").value("Bravo약"));
+
+        getAs(path, doctor.actor()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentMedications[0].medicationId").value(a))
+                .andExpect(jsonPath("$.currentMedications[0].medicationName").value("Alpha약"));
+        getAs("/api/v1/doctor/visits/" + previous, doctor.actor()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.prescriptions[0].items[0].medicationId").value(a))
+                .andExpect(jsonPath("$.prescriptions[0].items[0].medicationName").value("Alpha약"))
+                .andExpect(jsonPath("$.prescriptions[0].items[0].timesPerDay").value(2));
+    }
+
     private Map<String, Object> item(long medicine) {
         return Map.of("medicationId", medicine, "dosePerIntake", 1, "doseUnit", "정", "timesPerDay", 2,
                 "intervalDays", 1, "durationDays", 3, "timing", "AFTER_MEAL", "instructions", "복용 안내");

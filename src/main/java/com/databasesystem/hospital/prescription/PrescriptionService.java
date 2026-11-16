@@ -153,7 +153,20 @@ public class PrescriptionService {
             warnings.add(warning("INTERACTION", visitId, today, map("medicationAId", a, "medicationBId", b),
                     List.of(a, b), text(row, "interaction_content"), List.of(), prescribed, prescribed == a ? b : a));
         }
+        addMedicationNames(warnings);
         return warnings;
+    }
+
+    /** 경고 응답에 medicationIds와 같은 순서의 약품명 배열(medicationNames)을 붙인다. warningId 계산에는 쓰지 않는다. */
+    @SuppressWarnings("unchecked")
+    private void addMedicationNames(List<Warning> warnings) {
+        Set<Long> ids = new TreeSet<>();
+        warnings.forEach(w -> ids.addAll((List<Long>) w.response().get("medicationIds")));
+        Map<Long, String> names = db.medicineNames(ids);
+        for (Warning warning : warnings) {
+            List<Long> warningIds = (List<Long>) warning.response().get("medicationIds");
+            warning.response().put("medicationNames", warningIds.stream().map(names::get).toList());
+        }
     }
 
     private Warning warning(String type, long visit, LocalDate date, Map<String, Object> key, List<Long> ids,

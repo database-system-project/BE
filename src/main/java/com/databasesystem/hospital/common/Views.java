@@ -44,6 +44,13 @@ public final class Views {
                 "active", row.get("medicine_active"));
     }
 
+    /** prescriptionItem + 약품명. row에 medicine.product_name(product_name)이 조인되어 있어야 한다. */
+    public static Map<String, Object> prescriptionItemWithName(Map<String, Object> row) {
+        Map<String, Object> item = map("medicationId", id(row, "medicine_id"), "medicationName", text(row, "product_name"));
+        item.putAll(prescriptionItem(row));
+        return item;
+    }
+
     public static Map<String, Object> prescriptionItem(Map<String, Object> row) {
         return map("medicationId", id(row, "medicine_id"), "dosePerIntake", row.get("dose_amount"),
                 "doseUnit", text(row, "dose_unit"), "timesPerDay", row.get("times_per_day"),

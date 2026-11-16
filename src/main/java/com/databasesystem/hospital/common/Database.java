@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,6 +45,17 @@ public class Database {
     public long count(String sql, Map<String, ?> parameters) {
         Long count = jdbc.queryForObject(sql, parameters(parameters), Long.class);
         return count == null ? 0 : count;
+    }
+
+    /** 약품번호들의 제품명을 한 번에 조회한다. 없는 번호는 결과에 포함하지 않는다. */
+    public Map<Long, String> medicineNames(Collection<Long> ids) {
+        Map<Long, String> names = new LinkedHashMap<>();
+        if (ids.isEmpty()) { return names; }
+        for (Map<String, Object> row : rows(
+                "SELECT medicine_id, product_name FROM medicine WHERE medicine_id IN (:ids)", Map.of("ids", ids))) {
+            names.put(((Number) row.get("medicine_id")).longValue(), (String) row.get("product_name"));
+        }
+        return names;
     }
 
     public void lockPatient(long patientId) {
