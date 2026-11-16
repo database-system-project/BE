@@ -117,8 +117,9 @@ public class VisitService {
         var row = clinical.doctorVisit(user, id, false);
         Object record = db.optional("SELECT * FROM medical_record WHERE visit_id = :id", Map.of("id", id)).map(Views::record).orElse(null);
         var medications = db.rows("""
-                SELECT rx.prescription_id, rx.prescribed_at, pi.medicine_id, pi.total_days
+                SELECT rx.prescription_id, rx.prescribed_at, pi.medicine_id, pi.total_days, m.product_name
                   FROM prescription rx JOIN prescription_item pi ON pi.prescription_id = rx.prescription_id
+                  JOIN medicine m ON m.medicine_id = pi.medicine_id
                   JOIN visit v ON v.visit_id = rx.visit_id JOIN reservation r ON r.reservation_id = v.reservation_id
                  WHERE r.patient_id = :patient AND v.visit_id <> :id AND rx.prescription_status = 'ACTIVE'
                    AND (rx.prescribed_at AT TIME ZONE 'Asia/Seoul')::date <= :today
@@ -126,12 +127,16 @@ public class VisitService {
                  ORDER BY rx.prescribed_at, rx.prescription_id, pi.medicine_id
                 """, Map.of("patient", Values.id(row, "patient_id"), "id", id, "today", today())).stream()
                 .map(m -> Values.map("prescriptionId", Values.id(m, "prescription_id"), "medicationId", Values.id(m, "medicine_id"),
+                        "medicationName", Values.text(m, "product_name"),
                         "prescribedAt", Values.time(m, "prescribed_at"), "durationDays", m.get("total_days"))).toList();
         var prescriptions = db.rows("SELECT * FROM prescription WHERE visit_id = :id ORDER BY prescribed_at, prescription_id",
                 Map.of("id", id)).stream().map(rx -> Values.map("prescriptionId", Values.id(rx, "prescription_id"),
                 "visitId", id, "status", rx.get("prescription_status"), "prescribedAt", Values.time(rx, "prescribed_at"),
-                "items", db.rows("SELECT * FROM prescription_item WHERE prescription_id = :id ORDER BY medicine_id",
-                        Map.of("id", Values.id(rx, "prescription_id"))).stream().map(Views::prescriptionItem).toList())).toList();
+                "items", db.rows("""
+                        SELECT pi.*, m.product_name FROM prescription_item pi
+                          JOIN medicine m ON m.medicine_id = pi.medicine_id
+                         WHERE pi.prescription_id = :id ORDER BY pi.medicine_id
+                        """, Map.of("id", Values.id(rx, "prescription_id"))).stream().map(Views::prescriptionItemWithName).toList())).toList();
         return Values.map("visit", Views.visit(row), "patient", Views.patient(row), "medicalRecord", record,
                 "currentMedications", medications, "prescriptions", prescriptions);
     }
