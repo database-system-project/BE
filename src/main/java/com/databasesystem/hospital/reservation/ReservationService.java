@@ -2,6 +2,7 @@ package com.databasesystem.hospital.reservation;
 
 import com.databasesystem.hospital.auth.HospitalPrincipal;
 import com.databasesystem.hospital.common.ApiException;
+import com.databasesystem.hospital.common.AppointmentTimePolicy;
 import com.databasesystem.hospital.common.ClinicalRepository;
 import com.databasesystem.hospital.common.Database;
 import com.databasesystem.hospital.common.Query;
@@ -21,8 +22,11 @@ import java.util.Map;
 public class ReservationService {
     private final Database db;
     private final Clock clock;
+    private final AppointmentTimePolicy timePolicy;
 
-    public ReservationService(Database db, Clock clock) { this.db = db; this.clock = clock; }
+    public ReservationService(Database db, Clock clock, AppointmentTimePolicy timePolicy) {
+        this.db = db; this.clock = clock; this.timePolicy = timePolicy;
+    }
 
     @Transactional
     public Map<String, Object> create(HospitalPrincipal principal, ReservationController.Slot request) {
@@ -45,7 +49,7 @@ public class ReservationService {
         LocalDate to = Query.date(query, "to");
         Query.range(from, to);
         StringBuilder sql = new StringBuilder(ClinicalRepository.RESERVATIONS + " WHERE r.patient_id = :patient");
-        Map<String, Object> parameters = Values.map("patient", patient, "now", clock.instant());
+        Map<String, Object> parameters = Values.map("patient", patient, "now", timePolicy.cutoff());
         if (period != null) {
             sql.append("UPCOMING".equals(period) ? " AND (r.reservation_status = 'RESERVED' AND r.planned_reception_at >= :now)"
                     : " AND NOT (r.reservation_status = 'RESERVED' AND r.planned_reception_at >= :now)");
@@ -107,7 +111,7 @@ public class ReservationService {
 
     private void modifiable(Map<String, Object> row) {
         if (!"RESERVED".equals(row.get("reservation_status"))
-                || Values.instant(row, "planned_reception_at").isBefore(clock.instant())) {
+                || timePolicy.isPast(Values.instant(row, "planned_reception_at"))) {
             throw ApiException.conflict("INVALID_APPOINTMENT_STATE", "현재 예약은 변경하거나 취소할 수 없습니다.");
         }
     }
@@ -137,7 +141,7 @@ public class ReservationService {
                 && (time.isBefore(LocalTime.of(12, 30)) || !time.isBefore(LocalTime.of(13, 30)))
                 && time.getSecond() == 0 && time.getNano() == 0 && time.getMinute() % 30 == 0;
         if (!enabled || !validTime || !Values.date(schedule, "schedule_date").equals(local.toLocalDate())
-                || request.startsAt().toInstant().isBefore(clock.instant())) {
+                || timePolicy.isPast(request.startsAt().toInstant())) {
             throw ApiException.conflict("SLOT_UNAVAILABLE", "선택한 시간은 예약할 수 없습니다.");
         }
     }
@@ -153,7 +157,7 @@ public class ReservationService {
     private Map<String, Object> view(Map<String, Object> row) {
         long id = Values.id(row, "reservation_id");
         boolean change = "RESERVED".equals(row.get("reservation_status"))
-                && !Values.instant(row, "planned_reception_at").isBefore(clock.instant());
+                && !timePolicy.isPast(Values.instant(row, "planned_reception_at"));
         return Values.map("appointmentId", id, "appointmentCode", "R%06d".formatted(id),
                 "patientId", Values.id(row, "patient_id"), "departmentId", Values.id(row, "department_id"),
                 "departmentName", row.get("department_name"), "doctorId", Values.id(row, "doctor_id"),

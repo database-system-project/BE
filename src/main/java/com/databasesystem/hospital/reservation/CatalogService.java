@@ -3,6 +3,7 @@ package com.databasesystem.hospital.reservation;
 import com.databasesystem.hospital.auth.HospitalPrincipal;
 import com.databasesystem.hospital.auth.Role;
 import com.databasesystem.hospital.common.ApiException;
+import com.databasesystem.hospital.common.AppointmentTimePolicy;
 import com.databasesystem.hospital.common.Database;
 import com.databasesystem.hospital.common.Query;
 import com.databasesystem.hospital.common.Values;
@@ -39,10 +40,12 @@ public class CatalogService {
             """;
     private final Database db;
     private final Clock clock;
+    private final AppointmentTimePolicy timePolicy;
 
-    public CatalogService(Database db, Clock clock) {
+    public CatalogService(Database db, Clock clock, AppointmentTimePolicy timePolicy) {
         this.db = db;
         this.clock = clock;
+        this.timePolicy = timePolicy;
     }
 
     /** 활성 진료과만 이름 오름차순(동률은 ID 순)으로 반환한다. */
@@ -92,7 +95,7 @@ public class CatalogService {
                  ORDER BY schedule_date, schedule_id
                 """, Values.map("doctor", doctorId, "from", from, "to", to));
         Map<Long, Set<Instant>> occupied = occupied(schedules);
-        Instant now = clock.instant();
+        Instant now = timePolicy.cutoff();
 
         List<Map<String, Object>> items = new ArrayList<>();
         for (Map<String, Object> schedule : schedules) {

@@ -101,8 +101,12 @@ public class BillingService {
                 ORDER BY prescribed_at, prescription_id
                 """, Map.of("id", visitId)).stream().map(row -> map("prescriptionId", id(row, "prescription_id"),
                 "visitId", visitId, "status", row.get("prescription_status"), "prescribedAt", time(row, "prescribed_at"),
-                "items", db.rows("SELECT * FROM prescription_item WHERE prescription_id = :id ORDER BY medicine_id",
-                        Map.of("id", id(row, "prescription_id"))).stream().map(Views::prescriptionItem).toList())).toList();
+                "items", db.rows("""
+                        SELECT pi.*, m.product_name FROM prescription_item pi
+                        JOIN medicine m ON m.medicine_id = pi.medicine_id
+                        WHERE pi.prescription_id = :id ORDER BY pi.medicine_id
+                        """, Map.of("id", id(row, "prescription_id"))).stream()
+                        .map(Views::prescriptionItemWithName).toList())).toList();
         return map("visitId", visitId, "paymentId", id(payment, "payment_id"), "patient", Views.patient(visit),
                 "doctor", map("doctorId", id(visit, "doctor_id"), "name", visit.get("doctor_name"), "departmentName", visit.get("department_name")),
                 "prescriptions", prescriptions, "canPrint", !prescriptions.isEmpty());

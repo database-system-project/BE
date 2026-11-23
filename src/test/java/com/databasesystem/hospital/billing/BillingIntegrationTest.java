@@ -94,6 +94,7 @@ class BillingIntegrationTest extends IntegrationSupport {
         jdbc.update("INSERT INTO prescription(visit_id, prescribed_at, prescription_status) VALUES (?, ?, 'CANCELLED')", visit, time(NOW));
         getAs("/api/v1/billing/visits/" + visit + "/prescription-print", cashier).andExpect(status().isOk())
                 .andExpect(jsonPath("$.canPrint").value(true)).andExpect(jsonPath("$.prescriptions.length()").value(1))
+                .andExpect(jsonPath("$.prescriptions[0].items[0].medicationName").value("출력약"))
                 .andExpect(jsonPath("$.prescriptions[0].items[0].intervalDays").value(1));
     }
 
