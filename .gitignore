@@ -48,3 +48,7 @@ out/
 /src/main/resources/application.yml
 **/application*.yml
 **/application*.yaml
+
+# Locally generated demo SQL (contains password hashes).
+/dev/*.generated.sql
+/dev/__pycache__/

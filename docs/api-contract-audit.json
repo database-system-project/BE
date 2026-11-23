@@ -1,0 +1,2889 @@
+{
+  "database_schema": [
+    {
+      "table_name": "age_contraindication",
+      "column_name": "medicine_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "age_contraindication",
+      "column_name": "age_seq",
+      "type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "age_contraindication",
+      "column_name": "age_limit",
+      "type": "smallint",
+      "not_null": true
+    },
+    {
+      "table_name": "age_contraindication",
+      "column_name": "age_condition",
+      "type": "character varying(10)",
+      "not_null": true
+    },
+    {
+      "table_name": "age_contraindication",
+      "column_name": "age_content",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "consultation_fee",
+      "column_name": "fee_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "consultation_fee",
+      "column_name": "fee_type",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "consultation_fee",
+      "column_name": "fee_amount",
+      "type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "consultation_fee",
+      "column_name": "effective_from",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "consultation_fee",
+      "column_name": "set_by_account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "prescription_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "override_seq",
+      "type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "medicine_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "contra_type",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "related_medicine_id",
+      "type": "bigint",
+      "not_null": false
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "contra_content",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "override_reason",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "contraindication_override",
+      "column_name": "recorded_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "department",
+      "column_name": "department_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "department",
+      "column_name": "department_name",
+      "type": "character varying(50)",
+      "not_null": true
+    },
+    {
+      "table_name": "department",
+      "column_name": "department_active",
+      "type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor",
+      "column_name": "doctor_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor",
+      "column_name": "account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor",
+      "column_name": "department_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor",
+      "column_name": "doctor_name",
+      "type": "character varying(50)",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor",
+      "column_name": "doctor_active",
+      "type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "schedule_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "doctor_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "schedule_date",
+      "type": "date",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "reception_start",
+      "type": "time without time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "closing_time",
+      "type": "time without time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "lunch_start",
+      "type": "time without time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "lunch_end",
+      "type": "time without time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "doctor_schedule",
+      "column_name": "is_closed",
+      "type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "drug_interaction",
+      "column_name": "medicine_a_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "drug_interaction",
+      "column_name": "medicine_b_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "drug_interaction",
+      "column_name": "interaction_content",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "record_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "visit_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "symptoms",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "diagnosis",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "treatment_note",
+      "type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "written_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "medical_record",
+      "column_name": "record_updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "medicine_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "item_seq",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "product_name",
+      "type": "character varying(200)",
+      "not_null": true
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "company_name",
+      "type": "character varying(100)",
+      "not_null": true
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "efficacy",
+      "type": "text",
+      "not_null": false
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "usage_text",
+      "type": "text",
+      "not_null": false
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "precautions",
+      "type": "text",
+      "not_null": false
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "storage",
+      "type": "text",
+      "not_null": false
+    },
+    {
+      "table_name": "medicine",
+      "column_name": "medicine_active",
+      "type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "patient_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "patient_name",
+      "type": "character varying(50)",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "birth_date",
+      "type": "date",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "gender",
+      "type": "character varying(1)",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "phone",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "patient",
+      "column_name": "privacy_agreed_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "audit_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "patient_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "previous_birth_date",
+      "type": "date",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "new_birth_date",
+      "type": "date",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "previous_gender",
+      "type": "character varying(1)",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "new_gender",
+      "type": "character varying(1)",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "changed_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "patient_demographic_audit",
+      "column_name": "changed_by_account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "payment",
+      "column_name": "payment_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "payment",
+      "column_name": "visit_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "payment",
+      "column_name": "fee_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "payment",
+      "column_name": "paid_amount",
+      "type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "payment",
+      "column_name": "paid_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "payment",
+      "column_name": "processed_by_account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription",
+      "column_name": "prescription_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription",
+      "column_name": "visit_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription",
+      "column_name": "prescribed_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription",
+      "column_name": "prescription_status",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "prescription_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "medicine_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "dose_amount",
+      "type": "numeric(6,2)",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "dose_unit",
+      "type": "character varying(10)",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "times_per_day",
+      "type": "smallint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "interval_days",
+      "type": "smallint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "total_days",
+      "type": "smallint",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "timing",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "prescription_item",
+      "column_name": "directions",
+      "type": "character varying(200)",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "reservation_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "patient_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "schedule_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "previous_reservation_id",
+      "type": "bigint",
+      "not_null": false
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "planned_reception_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "reservation_status",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "reserved_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "reservation",
+      "column_name": "reservation_cancelled_at",
+      "type": "timestamp with time zone",
+      "not_null": false
+    },
+    {
+      "table_name": "staff",
+      "column_name": "staff_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "staff",
+      "column_name": "account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "staff",
+      "column_name": "staff_name",
+      "type": "character varying(50)",
+      "not_null": true
+    },
+    {
+      "table_name": "staff",
+      "column_name": "staff_active",
+      "type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "login_id",
+      "type": "character varying(50)",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "password_hash",
+      "type": "character varying(255)",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "role",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "account_status",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "token_version",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "user_account",
+      "column_name": "account_created_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "visit",
+      "column_name": "visit_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "visit",
+      "column_name": "reservation_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "visit",
+      "column_name": "checked_in_at",
+      "type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "visit",
+      "column_name": "visit_status",
+      "type": "character varying(20)",
+      "not_null": true
+    },
+    {
+      "table_name": "visit",
+      "column_name": "started_at",
+      "type": "timestamp with time zone",
+      "not_null": false
+    },
+    {
+      "table_name": "visit",
+      "column_name": "completed_at",
+      "type": "timestamp with time zone",
+      "not_null": false
+    },
+    {
+      "table_name": "visit",
+      "column_name": "visit_cancelled_at",
+      "type": "timestamp with time zone",
+      "not_null": false
+    },
+    {
+      "table_name": "visit",
+      "column_name": "cancel_reason",
+      "type": "character varying(200)",
+      "not_null": false
+    },
+    {
+      "table_name": "visit",
+      "column_name": "checked_in_by_account_id",
+      "type": "bigint",
+      "not_null": true
+    },
+    {
+      "table_name": "visit",
+      "column_name": "cancelled_by_account_id",
+      "type": "bigint",
+      "not_null": false
+    }
+  ],
+  "date": "2026-11-23",
+  "code_commit": "2d5b7fe",
+  "unauthorized_checks": 67,
+  "reference_data": [
+    {
+      "medicines": 194,
+      "dur_only": 65,
+      "blank_names": 0,
+      "with_efficacy": 128
+    }
+  ],
+  "observations": [
+    {
+      "case": "AGE warning variant with ruleKey.medicationId + ageSeq",
+      "status": 200,
+      "warnings": 1
+    },
+    {
+      "case": "Notion DOCTOR via staff accounts",
+      "status": 400,
+      "code": "INVALID_REQUEST"
+    },
+    {
+      "case": "GET /admin/staff-accounts?role=DOCTOR DOCTOR role",
+      "status": 400,
+      "code": "INVALID_REQUEST"
+    },
+    {
+      "case": "PATCH /admin/staff-accounts/10 DOCTOR role",
+      "status": 400,
+      "code": "INVALID_REQUEST"
+    }
+  ],
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · loginId",
+          "string",
+          "필수",
+          "가입하거나 발급받은 로그인 아이디"
+        ],
+        [
+          "body · password",
+          "string",
+          "필수",
+          "입력한 비밀번호. 앞뒤 공백을 임의로 제거하지 않음"
+        ]
+      ],
+      "title": "로그인",
+      "status": 200,
+      "issues": [],
+      "checked_values": 8,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/9329385946128387b483010d1b5b3b03",
+      "request_fields": [
+        "loginId",
+        "password"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/signup",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · loginId",
+          "string",
+          "필수",
+          "로그인 아이디, 1~50자. 양끝 공백 제거"
+        ],
+        [
+          "body · password",
+          "string",
+          "필수",
+          "비밀번호 정책은 공통 계약 적용"
+        ],
+        [
+          "body · name",
+          "string",
+          "필수",
+          "양끝 공백 제거 후 1~50자"
+        ],
+        [
+          "body · birthDate",
+          "date",
+          "필수",
+          "미래가 아닌 생년월일"
+        ],
+        [
+          "body · gender",
+          "enum",
+          "필수",
+          "M 또는 F"
+        ],
+        [
+          "body · phone",
+          "string",
+          "필수",
+          "하이픈·공백을 제거한 숫자 연락처. 1~20자"
+        ],
+        [
+          "body · privacyAgreed",
+          "boolean",
+          "필수",
+          "true만 허용"
+        ]
+      ],
+      "title": "환자 회원가입",
+      "status": 201,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/dd293859461283a285f881e4e7147d74",
+      "request_fields": [
+        "loginId",
+        "password",
+        "name",
+        "birthDate",
+        "gender",
+        "phone",
+        "privacyAgreed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body",
+          "—",
+          "없음",
+          "요청 본문 없음"
+        ]
+      ],
+      "title": "내 정보 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 11,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/1159385946128207ab5e81f0f186a785",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me/visits",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · from",
+          "date",
+          "선택",
+          "조회 시작일. YYYY-MM-DD, 해당 날짜 포함"
+        ],
+        [
+          "query · to",
+          "date",
+          "선택",
+          "조회 종료일. YYYY-MM-DD, 해당 날짜 포함. from 이후"
+        ]
+      ],
+      "title": "내 진료 이용내역 목록",
+      "status": 200,
+      "issues": [],
+      "checked_values": 15,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/9ab9385946128243a46801ecb1629a35",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me/visits/{visitId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ]
+      ],
+      "title": "내 진료기록 상세",
+      "status": 200,
+      "issues": [],
+      "checked_values": 27,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/ae89385946128233b6a301d0657d089d",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me/prescriptions/{prescriptionId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · prescriptionId",
+          "integer",
+          "필수",
+          "처방 식별자. 양의 정수"
+        ]
+      ],
+      "title": "내 처방·복약 안내",
+      "status": 200,
+      "issues": [],
+      "checked_values": 17,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/5e1938594612837092440155fa66da51",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/billing/visits",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · paymentStatus",
+          "enum",
+          "선택",
+          "UNPAID 또는 PAID. 생략하면 전체"
+        ],
+        [
+          "query · from",
+          "date",
+          "선택",
+          "조회 시작일. YYYY-MM-DD, 해당 날짜 포함"
+        ],
+        [
+          "query · to",
+          "date",
+          "선택",
+          "조회 종료일. YYYY-MM-DD, 해당 날짜 포함. from 이후"
+        ]
+      ],
+      "title": "수납 대기·결제 완료 목록",
+      "status": 200,
+      "issues": [],
+      "checked_values": 25,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/3a29385946128263bfcb0128ef13deae",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/billing/visits/{visitId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ]
+      ],
+      "title": "결제 확인용 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 7,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/5a093859461283b297058140f196ab16",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/billing/visits/{visitId}/payments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ],
+        [
+          "body · feeId",
+          "integer",
+          "필수",
+          "결제 확인 상세에서 받은 요금 이력 ID"
+        ]
+      ],
+      "title": "진찰료 결제 완료 처리",
+      "status": 200,
+      "issues": [],
+      "checked_values": 8,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/92993859461283f9ae5c01573a31864c",
+      "request_fields": [
+        "feeId"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/payments/{paymentId}/receipt",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · paymentId",
+          "integer",
+          "필수",
+          "결제 식별자. 미결제 건은 null. 양의 정수"
+        ]
+      ],
+      "title": "전자영수증 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 12,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/51693859461283b4a88f81bf68202c43",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/billing/visits/{visitId}/prescription-print",
+      "extra_response_fields": [
+        "prescriptions[].items[].medicationName"
+      ],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ]
+      ],
+      "title": "처방전 발급용 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 27,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/3a19385946128288b7eb81a5e245f0de",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/departments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body",
+          "—",
+          "없음",
+          "요청 본문 없음"
+        ]
+      ],
+      "title": "예약용 진료과 목록",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/1129385946128399b22501ed877754ae",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/departments/{departmentId}/doctors",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · departmentId",
+          "integer",
+          "필수",
+          "진료과 식별자. 양의 정수"
+        ]
+      ],
+      "title": "진료과별 의사 목록",
+      "status": 200,
+      "issues": [],
+      "checked_values": 4,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/33293859461282f7939801d74c32913e",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/doctors/{doctorId}/availability",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · doctorId",
+          "integer",
+          "필수",
+          "의사 식별자. 양의 정수"
+        ],
+        [
+          "query · from",
+          "date",
+          "필수",
+          "조회 시작일. YYYY-MM-DD"
+        ],
+        [
+          "query · to",
+          "date",
+          "필수",
+          "조회 종료일, 시작일 이상"
+        ]
+      ],
+      "title": "예약 가능 날짜·시간 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 18,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/a5e93859461282f69e99810c53a9ef2c",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · scheduleId",
+          "integer",
+          "필수",
+          "선택한 의사 일정 ID"
+        ],
+        [
+          "body · startsAt",
+          "date-time",
+          "필수",
+          "조회한 예약 슬롯 시작시각. UTC 오프셋 포함"
+        ]
+      ],
+      "title": "예약 신청",
+      "status": 201,
+      "issues": [],
+      "checked_values": 12,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/22e938594612821da32481ad92075307",
+      "request_fields": [
+        "scheduleId",
+        "startsAt"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · period",
+          "enum",
+          "선택",
+          "UPCOMING 또는 PAST. 생략하면 전체"
+        ],
+        [
+          "query · status",
+          "enum",
+          "선택",
+          "RESERVED, CHECKED_IN, CANCELLED"
+        ],
+        [
+          "query · from",
+          "date",
+          "선택",
+          "조회 시작일. YYYY-MM-DD, 해당 날짜 포함"
+        ],
+        [
+          "query · to",
+          "date",
+          "선택",
+          "조회 종료일. YYYY-MM-DD, 해당 날짜 포함. from 이후"
+        ]
+      ],
+      "title": "내 예약 목록",
+      "status": 200,
+      "issues": [],
+      "checked_values": 13,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/95093859461283f9957a01366d8d7326",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/appointments/{appointmentId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · appointmentId",
+          "integer",
+          "필수",
+          "예약 식별자. DB reservation_id에 대응. 양의 정수"
+        ]
+      ],
+      "title": "내 예약 상세",
+      "status": 200,
+      "issues": [],
+      "checked_values": 12,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/15d93859461282be87bf81ad1cab815e",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/{appointmentId}/reschedule",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · appointmentId",
+          "integer",
+          "필수",
+          "예약 식별자. DB reservation_id에 대응. 양의 정수"
+        ],
+        [
+          "body · scheduleId",
+          "integer",
+          "필수",
+          "새로 선택한 의사 일정 ID"
+        ],
+        [
+          "body · startsAt",
+          "date-time",
+          "필수",
+          "새 슬롯 시작시각"
+        ]
+      ],
+      "title": "예약 시간 변경",
+      "status": 200,
+      "issues": [],
+      "checked_values": 14,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/6149385946128224aed00190f91be88e",
+      "request_fields": [
+        "scheduleId",
+        "startsAt"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/appointments/{appointmentId}/cancel",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · appointmentId",
+          "integer",
+          "필수",
+          "예약 식별자. DB reservation_id에 대응. 양의 정수"
+        ]
+      ],
+      "title": "내 예약 취소",
+      "status": 200,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/42293859461283f0a6608159ae9c665e",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reception/appointments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · date",
+          "date",
+          "선택",
+          "기본 오늘. 당일 원무 업무만 허용"
+        ],
+        [
+          "query · keyword",
+          "string",
+          "선택",
+          "환자명 또는 환자번호 검색어"
+        ],
+        [
+          "query · status",
+          "enum",
+          "선택",
+          "RESERVED, CHECKED_IN, CANCELLED"
+        ]
+      ],
+      "title": "당일 예약·접수 검색",
+      "status": 200,
+      "issues": [],
+      "checked_values": 71,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/e9c938594612833a860e8160d7bd1c78",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/visits/queue",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · doctorId",
+          "integer",
+          "선택",
+          "원무만 다른 의사를 선택할 수 있음. 의사는 본인 범위만"
+        ],
+        [
+          "query · status",
+          "enum",
+          "선택",
+          "WAITING, IN_PROGRESS, COMPLETED, CANCELLED. 생략하면 WAITING·IN_PROGRESS"
+        ]
+      ],
+      "title": "진료 대기열 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 13,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/22a9385946128203a0d981bf1d18aa1e",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/doctor/schedules",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · from",
+          "date",
+          "선택",
+          "조회 시작일. YYYY-MM-DD, 해당 날짜 포함"
+        ],
+        [
+          "query · to",
+          "date",
+          "선택",
+          "조회 종료일. YYYY-MM-DD, 해당 날짜 포함. from 이후"
+        ]
+      ],
+      "title": "담당 의사의 내 일정 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 10,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/549938594612823bbf9e010ae9578c0a",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/doctor/visits/{visitId}",
+      "extra_response_fields": [
+        "currentMedications[].medicationName",
+        "medicalRecord.diagnosis",
+        "medicalRecord.recordId",
+        "medicalRecord.symptoms",
+        "medicalRecord.treatmentNote",
+        "medicalRecord.updatedAt",
+        "medicalRecord.visitId",
+        "medicalRecord.writtenAt",
+        "prescriptions[].items",
+        "prescriptions[].items[].dosePerIntake",
+        "prescriptions[].items[].doseUnit",
+        "prescriptions[].items[].durationDays",
+        "prescriptions[].items[].instructions",
+        "prescriptions[].items[].intervalDays",
+        "prescriptions[].items[].medicationId",
+        "prescriptions[].items[].medicationName",
+        "prescriptions[].items[].timesPerDay",
+        "prescriptions[].items[].timing",
+        "prescriptions[].prescribedAt",
+        "prescriptions[].prescriptionId",
+        "prescriptions[].status",
+        "prescriptions[].visitId"
+      ],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ]
+      ],
+      "title": "담당 진료 상세",
+      "status": 200,
+      "issues": [],
+      "checked_values": 26,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/cee9385946128225b0e981d74a7a425f",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/doctor/visits/{visitId}/start",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ]
+      ],
+      "title": "진료 시작",
+      "status": 200,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/9a493859461282c5ba4281baa1b28632",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/doctor/visits/{visitId}/medical-record",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ],
+        [
+          "body · symptoms",
+          "string",
+          "필수",
+          "공백이 아닌 증상"
+        ],
+        [
+          "body · diagnosis",
+          "string",
+          "필수",
+          "공백이 아닌 진단"
+        ],
+        [
+          "body · treatmentNote",
+          "string",
+          "필수",
+          "공백이 아닌 진료 내용"
+        ]
+      ],
+      "title": "진료기록 작성",
+      "status": 201,
+      "issues": [],
+      "checked_values": 7,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/897938594612828aa5fb81b62e6ec423",
+      "request_fields": [
+        "symptoms",
+        "diagnosis",
+        "treatmentNote"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/doctor/visits/{visitId}/medical-record",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ],
+        [
+          "body · symptoms",
+          "string",
+          "선택",
+          "공백이 아닌 증상"
+        ],
+        [
+          "body · diagnosis",
+          "string",
+          "선택",
+          "공백이 아닌 진단"
+        ],
+        [
+          "body · treatmentNote",
+          "string",
+          "선택",
+          "공백이 아닌 진료 내용"
+        ]
+      ],
+      "title": "진료기록 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 7,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/e4b938594612837da69381a0543f6d51",
+      "request_fields": [
+        "treatmentNote"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/doctor/visits/{visitId}/prescription-checks",
+      "extra_response_fields": [
+        "warnings[].medicationNames",
+        "warnings[].medicationNames[]",
+        "warnings[].ruleKey.medicationAId",
+        "warnings[].ruleKey.medicationBId"
+      ],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ],
+        [
+          "body · medicationIds",
+          "integer[]",
+          "필수",
+          "활성 약품 ID 1개 이상, 중복 불가"
+        ]
+      ],
+      "title": "처방 금기 사전 확인",
+      "status": 200,
+      "issues": [],
+      "checked_values": 8,
+      "unexercised_fields": [
+        "warnings[].ruleKey.medicationId (conditional warning type)",
+        "warnings[].ruleKey.ageSeq (conditional warning type)"
+      ],
+      "url": "https://app.notion.com/843938594612836186308154d943eb83",
+      "request_fields": [
+        "medicationIds"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/doctor/visits/{visitId}/prescriptions",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ],
+        [
+          "body · items",
+          "object[]",
+          "필수",
+          "1개 이상. 같은 약품 중복 불가"
+        ],
+        [
+          "body · items[].medicationId",
+          "integer",
+          "필수",
+          "활성 약품 ID"
+        ],
+        [
+          "body · items[].dosePerIntake",
+          "number",
+          "필수",
+          "0 초과, 소수 최대 2자리, 최대 9999.99"
+        ],
+        [
+          "body · items[].doseUnit",
+          "string",
+          "필수",
+          "투약량 단위. 1~10자"
+        ],
+        [
+          "body · items[].timesPerDay",
+          "integer",
+          "필수",
+          "1~32767"
+        ],
+        [
+          "body · items[].intervalDays",
+          "integer",
+          "필수",
+          "1~32767. 1이면 매일"
+        ],
+        [
+          "body · items[].durationDays",
+          "integer",
+          "필수",
+          "1~32767. 총 투약일수"
+        ],
+        [
+          "body · items[].timing",
+          "enum",
+          "필수",
+          "BEFORE_MEAL, AFTER_MEAL, BEDTIME"
+        ],
+        [
+          "body · items[].instructions",
+          "string",
+          "필수",
+          "공백이 아닌 복용 방법, 최대 200자"
+        ],
+        [
+          "body · overrides",
+          "object[]",
+          "조건부",
+          "현재 금기 경고가 있으면 각 경고의 사유가 필요. 없으면 생략 또는 []"
+        ],
+        [
+          "body · overrides[].warningId",
+          "string",
+          "필수",
+          "서버가 반환한 현재 경고 식별자. 중복 불가"
+        ],
+        [
+          "body · overrides[].reason",
+          "string",
+          "필수",
+          "공백이 아닌 예외 처방 사유"
+        ]
+      ],
+      "title": "처방 저장 및 금기 예외 기록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/74e938594612835cbcae81f069c141e2",
+      "request_fields": [
+        "items",
+        "overrides"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/doctor/prescriptions/{prescriptionId}/cancel",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · prescriptionId",
+          "integer",
+          "필수",
+          "처방 식별자. 양의 정수"
+        ]
+      ],
+      "title": "처방 취소",
+      "status": 200,
+      "issues": [],
+      "checked_values": 2,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/af893859461283bb8ed9818611c152ba",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/doctor/visits/{visitId}/complete",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ]
+      ],
+      "title": "진료 완료",
+      "status": 200,
+      "issues": [],
+      "checked_values": 4,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/e86938594612822f8f8d0133c18905c6",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/reception/appointments/{appointmentId}/check-in",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · appointmentId",
+          "integer",
+          "필수",
+          "예약 식별자. DB reservation_id에 대응. 양의 정수"
+        ]
+      ],
+      "title": "예약 환자 도착 접수",
+      "status": 201,
+      "issues": [],
+      "checked_values": 15,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/21293859461282c1b42001209f1bdd38",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/reception/visits/{visitId}/cancel",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · visitId",
+          "integer",
+          "필수",
+          "접수·진료 식별자. 양의 정수"
+        ],
+        [
+          "body · reason",
+          "string",
+          "필수",
+          "양끝 공백 제거 후 1~200자의 취소 사유"
+        ]
+      ],
+      "title": "접수 취소",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/32e938594612822ebf5901aea0e78033",
+      "request_fields": [
+        "reason"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/staff/patients",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · name",
+          "string",
+          "선택",
+          "이름 검색어"
+        ],
+        [
+          "query · birthDate",
+          "date",
+          "선택",
+          "정확한 생년월일"
+        ],
+        [
+          "query · phone",
+          "string",
+          "선택",
+          "정규화하여 비교할 연락처"
+        ]
+      ],
+      "title": "환자 검색",
+      "status": 200,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/b1c9385946128337bea481a04dbaa8c7",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/staff/patients/{patientId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · patientId",
+          "integer",
+          "필수",
+          "환자 식별자. 양의 정수"
+        ]
+      ],
+      "title": "정정 대상 환자 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/3f393859461283d6a921015bec02e023",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/staff/patients/{patientId}/demographics",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · patientId",
+          "integer",
+          "필수",
+          "환자 식별자. 양의 정수"
+        ],
+        [
+          "body · birthDate",
+          "date",
+          "선택",
+          "미래가 아닌 생년월일"
+        ],
+        [
+          "body · gender",
+          "enum",
+          "선택",
+          "M 또는 F"
+        ]
+      ],
+      "title": "환자 생년월일·성별 정정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/55293859461282539bbf815570d67046",
+      "request_fields": [
+        "birthDate",
+        "gender"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/me/profile",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · name",
+          "string",
+          "선택",
+          "1~50자, 공백만 입력 불가"
+        ],
+        [
+          "body · phone",
+          "string",
+          "선택",
+          "정규화 후 숫자 연락처. 1~20자"
+        ]
+      ],
+      "title": "내 기본정보 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/c6d9385946128258a875814aca1e05a4",
+      "request_fields": [
+        "phone"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/departments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · name",
+          "string",
+          "필수",
+          "양끝 공백 제거 후 1~50자"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "필수",
+          "사용 여부"
+        ]
+      ],
+      "title": "진료과 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/a079385946128278859981be947e07e8",
+      "request_fields": [
+        "name",
+        "active"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/departments",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · keyword",
+          "string",
+          "선택",
+          "진료과명 포함 검색"
+        ],
+        [
+          "query · active",
+          "boolean",
+          "선택",
+          "true는 활성, false는 비활성. 생략하면 전체"
+        ]
+      ],
+      "title": "진료과 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 10,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/a3893859461283f3a37981eb7ebf0e45",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/departments/{departmentId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · departmentId",
+          "integer",
+          "필수",
+          "진료과 식별자. 양의 정수"
+        ]
+      ],
+      "title": "진료과 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/0ff93859461283aa9bd5817048f0320b",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/departments/{departmentId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · departmentId",
+          "integer",
+          "필수",
+          "진료과 식별자. 양의 정수"
+        ],
+        [
+          "body · name",
+          "string",
+          "선택",
+          "양끝 공백 제거 후 1~50자"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "선택",
+          "사용 여부"
+        ]
+      ],
+      "title": "진료과 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 3,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/343938594612831bb491810be85473b9",
+      "request_fields": [
+        "name"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/staff-accounts",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · loginId",
+          "string",
+          "필수",
+          "로그인 아이디, 1~50자"
+        ],
+        [
+          "body · initialPassword",
+          "string",
+          "필수",
+          "공통 비밀번호 정책 적용"
+        ],
+        [
+          "body · name",
+          "string",
+          "필수",
+          "양끝 공백 제거 후 1~50자"
+        ],
+        [
+          "body · role",
+          "enum",
+          "필수",
+          "DOCTOR, RECEPTION, CASHIER, ADMIN"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "필수",
+          "계정 활성 여부"
+        ]
+      ],
+      "title": "직원 계정 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/b8593859461282f4b52801569862499e",
+      "request_fields": [
+        "loginId",
+        "initialPassword",
+        "name",
+        "role",
+        "active"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/staff-accounts",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · role",
+          "enum",
+          "선택",
+          "DOCTOR, RECEPTION, CASHIER, ADMIN"
+        ],
+        [
+          "query · active",
+          "boolean",
+          "선택",
+          "생략하면 활성·비활성 모두"
+        ]
+      ],
+      "title": "직원 계정 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 21,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/2119385946128238b95a0195e74f2637",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/staff-accounts/{accountId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · accountId",
+          "integer",
+          "필수",
+          "사용자 계정 식별자. 양의 정수"
+        ]
+      ],
+      "title": "직원 계정 상세 조회",
+      "status": 200,
+      "issues": [
+        "missing doctorId"
+      ],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/48c938594612839cad43810026522d18",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/staff-accounts/{accountId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · accountId",
+          "integer",
+          "필수",
+          "사용자 계정 식별자. 양의 정수"
+        ],
+        [
+          "body · name",
+          "string",
+          "선택",
+          "공백이 아닌 표시 이름, 1~50자"
+        ],
+        [
+          "body · role",
+          "enum",
+          "선택",
+          "DOCTOR, RECEPTION, CASHIER, ADMIN"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "선택",
+          "계정 활성 여부"
+        ]
+      ],
+      "title": "직원 계정 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/dd993859461282a296048115bbefe546",
+      "request_fields": [
+        "name"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/doctors",
+      "extra_response_fields": [
+        "accountActive",
+        "loginId"
+      ],
+      "documented_request_fields": [
+        [
+          "body · accountId",
+          "integer",
+          "필수",
+          "직원 계정 API로 생성한 DOCTOR 역할 계정"
+        ],
+        [
+          "body · departmentId",
+          "integer",
+          "필수",
+          "소속 진료과"
+        ],
+        [
+          "body · name",
+          "string",
+          "필수",
+          "양끝 공백 제거 후 1~50자"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "필수",
+          "신규 예약 허용 여부"
+        ]
+      ],
+      "title": "의사 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/c9d9385946128388ae0b01a1d5e02c83",
+      "request_fields": [
+        "accountId",
+        "departmentId",
+        "name",
+        "active"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/doctors",
+      "extra_response_fields": [
+        "items[].accountActive",
+        "items[].loginId"
+      ],
+      "documented_request_fields": [
+        [
+          "query · departmentId",
+          "integer",
+          "선택",
+          "소속 진료과 ID"
+        ],
+        [
+          "query · keyword",
+          "string",
+          "선택",
+          "의사명 포함 검색"
+        ],
+        [
+          "query · active",
+          "boolean",
+          "선택",
+          "true는 활성, false는 비활성. 생략하면 전체"
+        ]
+      ],
+      "title": "의사 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 19,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/4c693859461283bcb61701eafcde4175",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/doctors/{doctorId}",
+      "extra_response_fields": [
+        "accountActive",
+        "loginId"
+      ],
+      "documented_request_fields": [
+        [
+          "path · doctorId",
+          "integer",
+          "필수",
+          "의사 식별자. 양의 정수"
+        ]
+      ],
+      "title": "의사 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/0fc93859461282f39b8e81fed67fdec3",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/doctors/{doctorId}",
+      "extra_response_fields": [
+        "accountActive",
+        "loginId"
+      ],
+      "documented_request_fields": [
+        [
+          "path · doctorId",
+          "integer",
+          "필수",
+          "의사 식별자. 양의 정수"
+        ],
+        [
+          "body · departmentId",
+          "integer",
+          "선택",
+          "변경할 소속 진료과"
+        ],
+        [
+          "body · name",
+          "string",
+          "선택",
+          "양끝 공백 제거 후 1~50자"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "선택",
+          "신규 예약 허용 여부"
+        ]
+      ],
+      "title": "의사 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/d6b9385946128338b44481b60e08625a",
+      "request_fields": [
+        "name"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/schedules",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · doctorId",
+          "integer",
+          "필수",
+          "일정을 등록할 의사 ID"
+        ],
+        [
+          "body · date",
+          "date",
+          "필수",
+          "한국 시간 기준 진료일"
+        ],
+        [
+          "body · closed",
+          "boolean",
+          "필수",
+          "휴진 여부"
+        ]
+      ],
+      "title": "의사 일정 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 9,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/764938594612838fbbfc016ea12946d0",
+      "request_fields": [
+        "doctorId",
+        "date",
+        "closed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/schedules",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · doctorId",
+          "integer",
+          "선택",
+          "특정 의사 ID"
+        ],
+        [
+          "query · from",
+          "date",
+          "선택",
+          "조회 시작일. YYYY-MM-DD, 해당 날짜 포함"
+        ],
+        [
+          "query · to",
+          "date",
+          "선택",
+          "조회 종료일. YYYY-MM-DD, 해당 날짜 포함. from 이후"
+        ]
+      ],
+      "title": "의사 일정 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 19,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/79a9385946128246b1d8819d3e6a607a",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/schedules/{scheduleId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · scheduleId",
+          "integer",
+          "필수",
+          "의사 일정 식별자. 양의 정수"
+        ]
+      ],
+      "title": "의사 일정 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 9,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/53b93859461283adb60981d09906d171",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/schedules/{scheduleId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · scheduleId",
+          "integer",
+          "필수",
+          "의사 일정 식별자. 양의 정수"
+        ],
+        [
+          "body · doctorId",
+          "integer",
+          "선택",
+          "변경할 의사 ID"
+        ],
+        [
+          "body · date",
+          "date",
+          "선택",
+          "변경할 진료일"
+        ],
+        [
+          "body · closed",
+          "boolean",
+          "선택",
+          "휴진 여부"
+        ]
+      ],
+      "title": "의사 일정 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 9,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/21c93859461283e0877701906756702e",
+      "request_fields": [
+        "closed"
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/admin/schedules/{scheduleId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · scheduleId",
+          "integer",
+          "필수",
+          "의사 일정 식별자. 양의 정수"
+        ]
+      ],
+      "title": "의사 일정 삭제",
+      "status": 204,
+      "issues": [],
+      "checked_values": 0,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/6c3938594612832780ca816eb37980b2",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/medications",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · itemSeq",
+          "string",
+          "필수",
+          "품목기준코드, 1~20자"
+        ],
+        [
+          "body · name",
+          "string",
+          "필수",
+          "제품명, 1~200자"
+        ],
+        [
+          "body · companyName",
+          "string",
+          "필수",
+          "업체명, 1~100자"
+        ],
+        [
+          "body · efficacy",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · usage",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · precautions",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · storage",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "필수",
+          "신규 처방 허용 여부"
+        ]
+      ],
+      "title": "약품 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 9,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/0fa9385946128345a3ea813a32efead9",
+      "request_fields": [
+        "itemSeq",
+        "name",
+        "companyName",
+        "active"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/medications",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · keyword",
+          "string",
+          "선택",
+          "제품명·품목기준코드 검색어"
+        ],
+        [
+          "query · active",
+          "boolean",
+          "선택",
+          "true는 활성, false는 비활성. 생략하면 전체"
+        ]
+      ],
+      "title": "약품 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 1765,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/7d1938594612834e812d01b368d363bb",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/medications/{medicationId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · medicationId",
+          "integer",
+          "필수",
+          "약품 식별자. DB medicine_id에 대응. 양의 정수"
+        ]
+      ],
+      "title": "약품 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 9,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/8aa93859461282f09dbb0158b9bb3900",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/medications/{medicationId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · medicationId",
+          "integer",
+          "필수",
+          "약품 식별자. DB medicine_id에 대응. 양의 정수"
+        ],
+        [
+          "body · name",
+          "string",
+          "선택",
+          "제품명, 1~200자"
+        ],
+        [
+          "body · companyName",
+          "string",
+          "선택",
+          "업체명, 1~100자"
+        ],
+        [
+          "body · efficacy",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · usage",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · precautions",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · storage",
+          "string | null",
+          "선택",
+          "원천 데이터에 없으면 null. 공백만 있는 문자열은 정규화"
+        ],
+        [
+          "body · active",
+          "boolean",
+          "선택",
+          "신규 처방 허용 여부"
+        ]
+      ],
+      "title": "약품 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 9,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/35a9385946128325921f01de3bfc40ad",
+      "request_fields": [
+        "name",
+        "efficacy"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/doctor/medications",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · keyword",
+          "string",
+          "필수",
+          "제품명 또는 품목기준코드 검색어"
+        ]
+      ],
+      "title": "처방용 활성 약품 검색",
+      "status": 200,
+      "issues": [],
+      "checked_values": 19,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/60293859461282c989bd01dd548cca3b",
+      "request_fields": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/drug-interactions",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · medicationAId",
+          "integer",
+          "필수",
+          "첫 번째 약품 ID"
+        ],
+        [
+          "body · medicationBId",
+          "integer",
+          "필수",
+          "다른 약품 ID"
+        ],
+        [
+          "body · message",
+          "string",
+          "필수",
+          "공백이 아닌 금기 내용"
+        ]
+      ],
+      "title": "병용금기 기준 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 4,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/d7f938594612820fada5810ff67b5daa",
+      "request_fields": [
+        "medicationAId",
+        "medicationBId",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/drug-interactions",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · medicationId",
+          "integer",
+          "선택",
+          "쌍의 어느 한쪽에 포함된 약품 ID"
+        ]
+      ],
+      "title": "병용금기 기준 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 549,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/37493859461283f0a24f0165f1ec535d",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/drug-interactions/{medicationAId}/{medicationBId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · medicationAId",
+          "integer",
+          "필수",
+          "병용금기 쌍 중 작은 약품 ID. 양의 정수"
+        ],
+        [
+          "path · medicationBId",
+          "integer",
+          "필수",
+          "병용금기 쌍 중 큰 약품 ID. 양의 정수"
+        ]
+      ],
+      "title": "병용금기 기준 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 4,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/06f93859461282ac864101a0be605dbf",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/drug-interactions/{medicationAId}/{medicationBId}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · medicationAId",
+          "integer",
+          "필수",
+          "병용금기 쌍 중 작은 약품 ID. 양의 정수"
+        ],
+        [
+          "path · medicationBId",
+          "integer",
+          "필수",
+          "병용금기 쌍 중 큰 약품 ID. 양의 정수"
+        ],
+        [
+          "body · message",
+          "string",
+          "필수",
+          "공백이 아닌 변경 금기 내용"
+        ]
+      ],
+      "title": "병용금기 기준 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 4,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/826938594612838d84dd0191fcd7d5ca",
+      "request_fields": [
+        "message"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/age-contraindications",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · medicationId",
+          "integer",
+          "필수",
+          "대상 약품 ID"
+        ],
+        [
+          "body · ageLimit",
+          "integer",
+          "필수",
+          "0~32767의 기준 만 나이"
+        ],
+        [
+          "body · ageOperator",
+          "enum",
+          "필수",
+          "LT 또는 LTE"
+        ],
+        [
+          "body · message",
+          "string",
+          "필수",
+          "공백이 아닌 금기 내용"
+        ]
+      ],
+      "title": "연령금기 기준 등록",
+      "status": 201,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/39f93859461282ff87f801453ed95cb7",
+      "request_fields": [
+        "medicationId",
+        "ageLimit",
+        "ageOperator",
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/age-contraindications",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "query · medicationId",
+          "integer",
+          "선택",
+          "대상 약품 ID"
+        ]
+      ],
+      "title": "연령금기 기준 목록 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 319,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/638938594612837489c5811ab8118c0f",
+      "request_fields": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/age-contraindications/{medicationId}/{ageSeq}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · medicationId",
+          "integer",
+          "필수",
+          "약품 식별자. DB medicine_id에 대응. 양의 정수"
+        ],
+        [
+          "path · ageSeq",
+          "integer",
+          "필수",
+          "해당 약품 안에서 서버가 발급한 연령금기 순번. 양의 정수"
+        ]
+      ],
+      "title": "연령금기 기준 상세 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/71693859461282afacd50132deaac7bf",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/age-contraindications/{medicationId}/{ageSeq}",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "path · medicationId",
+          "integer",
+          "필수",
+          "약품 식별자. DB medicine_id에 대응. 양의 정수"
+        ],
+        [
+          "path · ageSeq",
+          "integer",
+          "필수",
+          "해당 약품 안에서 서버가 발급한 연령금기 순번. 양의 정수"
+        ],
+        [
+          "body · ageLimit",
+          "integer",
+          "선택",
+          "0~32767의 기준 만 나이"
+        ],
+        [
+          "body · ageOperator",
+          "enum",
+          "선택",
+          "LT 또는 LTE"
+        ],
+        [
+          "body · message",
+          "string",
+          "선택",
+          "공백이 아닌 금기 내용"
+        ]
+      ],
+      "title": "연령금기 기준 수정",
+      "status": 200,
+      "issues": [],
+      "checked_values": 6,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/dd493859461283179f8f01cf96b31974",
+      "request_fields": [
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/consultation-fee",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body",
+          "—",
+          "없음",
+          "요청 본문 없음"
+        ]
+      ],
+      "title": "현행 진찰료 조회",
+      "status": 200,
+      "issues": [],
+      "checked_values": 11,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/2bc93859461283a2b45c016324061f0a",
+      "request_fields": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/consultation-fee",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · feeType",
+          "enum",
+          "필수",
+          "FIRST_VISIT 또는 FOLLOW_UP"
+        ],
+        [
+          "body · amount",
+          "integer",
+          "필수",
+          "양의 원 단위 금액. INT 범위 이내"
+        ],
+        [
+          "body · effectiveFrom",
+          "date-time",
+          "필수",
+          "적용 시작일시. UTC 오프셋 포함"
+        ]
+      ],
+      "title": "진찰료 변경",
+      "status": 200,
+      "issues": [],
+      "checked_values": 5,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/11393859461282d1a63f01f8bb7d6831",
+      "request_fields": [
+        "feeType",
+        "amount",
+        "effectiveFrom"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/me/password",
+      "extra_response_fields": [],
+      "documented_request_fields": [
+        [
+          "body · currentPassword",
+          "string",
+          "필수",
+          "현재 비밀번호"
+        ],
+        [
+          "body · newPassword",
+          "string",
+          "필수",
+          "공통 비밀번호 정책 적용. 현재 비밀번호와 달라야 함"
+        ]
+      ],
+      "title": "내 비밀번호 변경",
+      "status": 200,
+      "issues": [],
+      "checked_values": 1,
+      "unexercised_fields": [],
+      "url": "https://app.notion.com/a6a93859461283289436813bdbfc86a2",
+      "request_fields": [
+        "currentPassword",
+        "newPassword"
+      ]
+    }
+  ]
+}
