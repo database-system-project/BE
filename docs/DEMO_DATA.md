@@ -1,13 +1,16 @@
 # PostgreSQL 시연 데이터
 
 최신 Notion 재검토 근거는 [검토 결과](NOTION_REVIEW_2026-11-23.md)에 정리했다.
-시드는 V2 적용 후 비어 있는 시연 DB를 대상으로 하며 자동 시작 마이그레이션에 포함하지 않는다.
+시드는 V2 적용 후 비어 있는 시연 DB를 대상으로 한다. Render 시연 배포에서는
+`render` 프로필의 `DEMO_SEED_ON_START=true` 설정으로 빈 계정 테이블에만 한 번 적용한다.
+Flyway 업무 마이그레이션과 분리되어 있으며 기존 계정이 있으면 초기화를 건너뛴다.
 
 ## 준비된 파일
 
 - `dev/local-test-seed.sql`: FE 원본의 계정 6개와 기본정보를 유지한 V2 호환 기본 시드.
 - `dev/generate_demo_seed.py`: 기본 시드의 계정·해시를 읽고 시연 시나리오를 추가하는 Python 3.9 이상 생성기.
 - `dev/demo-seed.generated.sql`: 2026-11-23 15:00 기준으로 생성한 로컬 SQL.
+- `src/main/resources/demo/initial-data.sql`: 동일한 SQL의 배포용 복사본. 공개된 테스트 계정 해시와 가상 데이터만 포함한다.
 - `.env.demo`: 이전 단계와의 호환을 위해 둔 로컬 시연 비밀번호 파일. 기본값은 원본과 같은 `Test1234!`이다.
 
 생성된 SQL과 비밀번호 파일은 권한 0600이며 Git에서 제외한다.
