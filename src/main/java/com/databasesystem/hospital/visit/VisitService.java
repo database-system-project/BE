@@ -3,6 +3,7 @@ package com.databasesystem.hospital.visit;
 import com.databasesystem.hospital.auth.HospitalPrincipal;
 import com.databasesystem.hospital.auth.Role;
 import com.databasesystem.hospital.common.ApiException;
+import com.databasesystem.hospital.common.AppointmentTimePolicy;
 import com.databasesystem.hospital.common.ClinicalRepository;
 import com.databasesystem.hospital.common.Database;
 import com.databasesystem.hospital.common.Query;
@@ -23,9 +24,10 @@ public class VisitService {
     private final Database db;
     private final ClinicalRepository clinical;
     private final Clock clock;
+    private final AppointmentTimePolicy timePolicy;
 
-    public VisitService(Database db, ClinicalRepository clinical, Clock clock) {
-        this.db = db; this.clinical = clinical; this.clock = clock;
+    public VisitService(Database db, ClinicalRepository clinical, Clock clock, AppointmentTimePolicy timePolicy) {
+        this.db = db; this.clinical = clinical; this.clock = clock; this.timePolicy = timePolicy;
     }
 
     public Map<String, Object> appointments(HospitalPrincipal user, Map<String, String> query) {
@@ -59,8 +61,8 @@ public class VisitService {
         }
         if (!today().equals(Values.date(reservation, "schedule_date"))
                 || !"RESERVED".equals(reservation.get("reservation_status"))
-                || !LocalTime.now(clock.withZone(Values.SEOUL)).isBefore(LocalTime.of(17, 0))) {
-            throw ApiException.conflict("INVALID_APPOINTMENT_STATE", "당일 마감 전 예약만 접수할 수 있습니다.");
+                || timePolicy.receptionClosed()) {
+            throw ApiException.conflict("INVALID_APPOINTMENT_STATE", "오늘의 예약완료 상태이며 접수 가능한 시간인지 확인하세요.");
         }
         db.update("UPDATE reservation SET reservation_status = 'CHECKED_IN' WHERE reservation_id = :id", Map.of("id", id));
         long visit = db.insert("""
@@ -213,7 +215,7 @@ public class VisitService {
 
     private Map<String, Object> appointmentView(Map<String, Object> row) {
         long id = Values.id(row, "reservation_id");
-        boolean change = "RESERVED".equals(row.get("reservation_status")) && !Values.instant(row, "planned_reception_at").isBefore(clock.instant());
+        boolean change = "RESERVED".equals(row.get("reservation_status")) && !timePolicy.isPast(Values.instant(row, "planned_reception_at"));
         return Values.map("appointmentId", id, "appointmentCode", "R%06d".formatted(id), "patientId", Values.id(row, "patient_id"),
                 "patientName", row.get("patient_name"), "departmentId", Values.id(row, "department_id"), "departmentName", row.get("department_name"),
                 "doctorId", Values.id(row, "doctor_id"), "doctorName", row.get("doctor_name"), "scheduleId", Values.id(row, "schedule_id"),

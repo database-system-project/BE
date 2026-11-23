@@ -68,3 +68,13 @@
 [Docker](https://render.com/docs/docker),
 [Blueprint 명세](https://render.com/docs/blueprint-spec),
 [PostgreSQL 연결](https://render.com/docs/postgresql-creating-connecting)
+
+## 야간 시연 옵션
+
+`DEMO_RELAXED_HOURS=true`를 Render 백엔드 환경변수에 설정하면 오늘의 빈 예약 시간은
+현재 시각이 지났더라도 예약·변경·취소할 수 있고 17시 이후에도 당일 예약을 접수할 수 있다.
+기본값은 false이며, 일반 운영의 마감 제한은 유지한다.
+예약 슬롯(09:00~16:00, 점심 제외), 휴진·중복 예약·권한·진료 순서 검증은 유지한다.
+서버 Clock, JWT 만료 시간, 저장되는 접수·진료·결제 시각은 실제 시간을 사용한다.
+지난 날짜의 예약을 새로 만들거나 접수하는 기능은 열지 않는다.
+옵션을 끌 때는 false로 설정하고 새 설정으로 배포한다.

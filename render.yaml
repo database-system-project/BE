@@ -13,6 +13,8 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
+      - key: DEMO_RELAXED_HOURS
+        value: "true"
       - key: DEMO_SEED_ON_START
         value: "true"
       - key: JWT_SECRET
